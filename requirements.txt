@@ -1,0 +1,10 @@
+Flask==2.3.3
+Flask-Cors==4.0.0
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.21
+pytest==7.4.2
+pytest-flask==1.2.0
+python-dotenv==1.0.0
+Werkzeug==2.3.7
+matplotlib==3.8.0
+numpy==1.26.0 

@@ -1,0 +1,88 @@
+Kanban board Spec:
+
+**1. Overview**
+   - Local Kanban board web application for task management.
+   - Backend: Python with Flask.
+   - Frontend: HTML and JavaScript.
+   - Integration with MCP protocol for agent communication.
+
+**2. Features**
+   - **Projects Management:** Create, update, delete projects.
+   - **Tickets:** 
+     - Create tickets with types (e.g., spike, story).
+     - Ticket states: Investigate, Ready to Work, In Progress, Done.
+   - **MCP Integration:**
+     - REST API endpoints for MCP communication.
+     - No authentication needed.
+
+**3. Backend Design**
+
+    Database: SQLite.
+
+        Tables:
+
+            Projects: ID, name, description.
+
+            Tickets: ID, project_id, type, state, description.
+
+            TicketTypes: ID, name.
+
+            TicketStates: ID, name.
+
+    Flask Routes:
+
+        /projects: Create, read, update, delete projects.
+
+        /tickets: Create, read, update, delete tickets.
+
+        /mcp: MCP integration endpoints.            
+
+
+**3. Backend Design (continued)**
+   - **Flask Routes:**
+     - `/projects`: 
+       - **POST**: Create a new project.
+       - **GET**: List all projects.
+       - **PUT**: Update a project.
+       - **DELETE**: Delete a project.
+     - `/tickets`: 
+       - **POST**: Create a new ticket.
+       - **GET**: List all tickets for a project.
+       - **PUT**: Update a ticket.
+       - **DELETE**: Delete a ticket.
+     - `/mcp`: 
+       - Endpoints for MCP communication, like triggering specific actions.
+
+**4. Frontend Design**
+   - **HTML Pages**:
+     - Project dashboard: List projects, create new projects.
+     - Ticket board: List tickets by state, create/update tickets.
+
+**5. MCP Integration**
+   - REST endpoints for Cursor to interact with, such as moving tickets between states.
+
+
+**4. Frontend Design (Detailed)**
+   - **HTML Pages**:
+     - **Project Dashboard**:
+       - A page that lists all projects with options to create, edit, or delete them.
+       - Form for creating a new project with fields for name and description.
+     - **Ticket Board**:
+       - A Kanban-style board with columns for each ticket state (e.g., "Investigate," "In Progress").
+       - Drag-and-drop functionality for moving tickets between columns.
+       - Form to create a new ticket with fields for type, state, and description.
+
+   - **JavaScript**:
+     - Use fetch or XMLHttpRequest to interact with the Flask backend.
+     - Handle form submissions for creating projects and tickets.
+     - Update the UI dynamically based on API responses.
+
+5. MCP Settings
+
+    Create a settings page or section where you can:
+
+        Input MCP server details (e.g., endpoint URLs, any relevant parameters).
+
+        Save these settings so they can be used for API calls.
+
+This can be a simple form that updates a config file or stores the details in your database.

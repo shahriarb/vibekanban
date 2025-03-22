@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kanban Board{% endblock %}</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {% block styles %}{% endblock %}
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-indigo-600 text-white shadow-md">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="text-xl font-bold">Kanban Board</div>
+                <div class="flex space-x-4">
+                    <a href="{{ url_for('projects.dashboard') }}" class="hover:text-indigo-200">Projects</a>
+                    <a href="{{ url_for('metrics.dashboard') }}" class="hover:text-indigo-200">Metrics</a>
+                    <a href="{{ url_for('mcp.settings') }}" class="hover:text-indigo-200">MCP Settings</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-gray-200 py-4 mt-8">
+        <div class="container mx-auto px-4 text-center text-gray-600">
+            <p>Kanban Board Application &copy; {{ now.year }}</p>
+        </div>
+    </footer>
+
+    <!-- Common JavaScript -->
+    <script>
+        // Utility functions
+        function fetchJSON(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            };
+            return fetch(url, { ...defaultOptions, ...options })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                });
+        }
+
+        // Show error messages
+        function showError(message, elementId = 'error-message') {
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.classList.remove('hidden');
+                setTimeout(() => {
+                    errorElement.classList.add('hidden');
+                }, 5000);
+            } else {
+                alert(`Error: ${message}`);
+            }
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html> 
