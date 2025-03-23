@@ -144,163 +144,177 @@
 {% endblock %}
 
 {% block content %}
-<div id="project-header" class="mb-6">
-    <div class="flex items-center justify-between mb-2">
-        <h1 id="project-name" class="text-2xl font-bold">Loading project...</h1>
-        <div class="flex space-x-2">
-            <button id="new-ticket-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded" disabled>
-                <i class="fas fa-plus mr-2"></i> New Ticket
-            </button>
-            <a href="{{ url_for('projects.dashboard') }}" class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
-                <i class="fas fa-arrow-left mr-2"></i> Back to Projects
-            </a>
+<!-- Main container with title and board -->
+<div id="board-view">
+    <!-- Project title container -->
+    <div id="project-title-container">
+        <div id="project-header" class="mb-6">
+            <div class="flex items-center justify-between mb-2">
+                <h1 id="project-name" class="text-2xl font-bold">Loading project...</h1>
+                <div class="flex space-x-2">
+                    <button id="new-ticket-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded" disabled>
+                        <i class="fas fa-plus mr-2"></i> New Ticket
+                    </button>
+                    <a href="{{ url_for('projects.dashboard') }}" class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Projects
+                    </a>
+                </div>
+            </div>
+            <p id="project-description" class="text-gray-600">Loading project details...</p>
         </div>
     </div>
-    <p id="project-description" class="text-gray-600">Loading project details...</p>
-</div>
 
-<!-- Error message display -->
-<div id="error-message" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden"></div>
+    <!-- Error message display -->
+    <div id="error-message" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden"></div>
 
-<!-- Project selection form (shown if no project_id in URL) -->
-<div id="project-selection" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
-    <h2 class="text-lg font-bold mb-4">Select a Project</h2>
-    <form id="project-select-form" class="flex items-end space-x-4">
-        <div class="flex-grow">
-            <label for="project-select" class="block text-gray-700 mb-2">Project</label>
-            <select id="project-select" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <option value="">Select a project</option>
-                <!-- Projects will be loaded here -->
-            </select>
-        </div>
-        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-            Load Board
-        </button>
-    </form>
-</div>
-
-<!-- Kanban board -->
-<div id="kanban-board" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-    <!-- Columns will be generated dynamically -->
-    <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
-    <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
-    <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
-</div>
-
-<!-- Empty state -->
-<div id="empty-state" class="hidden text-center py-12">
-    <i class="fas fa-ticket-alt text-gray-400 text-5xl mb-4"></i>
-    <p class="text-gray-500 text-xl mb-4">No tickets found</p>
-    <p class="text-gray-400 mb-4">Create your first ticket to get started</p>
-    <button id="empty-new-ticket-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
-        <i class="fas fa-plus mr-2"></i> Create Ticket
-    </button>
-</div>
-
-<!-- Ticket Modal -->
-<div id="ticket-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg">
-        <div class="flex justify-between items-center p-4 border-b">
-            <h2 id="modal-title" class="text-xl font-bold">New Ticket</h2>
-            <button class="modal-close text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
+    <!-- Project selection form (shown if no project_id in URL) -->
+    <div id="project-selection" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
+        <h2 class="text-lg font-bold mb-4">Select a Project</h2>
+        <form id="project-select-form" class="flex items-end space-x-4">
+            <div class="flex-grow">
+                <label for="project-select" class="block text-gray-700 mb-2">Project</label>
+                <select id="project-select" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Select a project</option>
+                    <!-- Projects will be loaded here -->
+                </select>
+            </div>
+            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                Load Board
             </button>
-        </div>
-        
-        <div class="modal-content">
-            <form id="ticket-form" class="p-6">
-                <input type="hidden" id="ticket-id" value="">
-                <input type="hidden" id="ticket-project-id" value="">
-                
-                <div class="mb-4">
-                    <label for="ticket-type" class="block text-gray-700 mb-2">Type</label>
-                    <select id="ticket-type" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        <!-- Ticket types will be loaded here -->
-                        <option value="">Loading types...</option>
-                    </select>
-                </div>
-                
-                <div class="mb-4">
-                    <label for="ticket-what" class="block text-gray-700 mb-2">What</label>
-                    <textarea id="ticket-what" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="2" required></textarea>
-                </div>
-                
-                <div class="mb-4">
-                    <label for="ticket-why" class="block text-gray-700 mb-2">Why</label>
-                    <textarea id="ticket-why" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="2"></textarea>
-                </div>
-                
-                <div class="mb-6">
-                    <label for="ticket-acceptance" class="block text-gray-700 mb-2">Acceptance Criteria</label>
-                    <textarea id="ticket-acceptance" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3"></textarea>
-                </div>
-                
-                <div class="mb-6">
-                    <label for="ticket-test-steps" class="block text-gray-700 mb-2">Test Steps</label>
-                    <textarea id="ticket-test-steps" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="Steps to test this functionality..."></textarea>
-                </div>
-                
-                <div class="mb-4" id="ticket-state-container">
-                    <label for="ticket-state" class="block text-gray-700 mb-2">State</label>
-                    <select id="ticket-state" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                        <!-- Ticket states will be loaded here -->
-                        <option value="">Loading states...</option>
-                    </select>
-                </div>
-                
-                <!-- File attachments section (visible only when editing) -->
-                <div id="attachments-container" class="mb-4 hidden">
-                    <label class="block text-gray-700 mb-2">Attachments</label>
-                    <div id="attachments-list" class="bg-gray-50 rounded p-2 mb-2">
-                        <p id="no-attachments-message" class="text-gray-500 text-sm">No attachments yet</p>
+        </form>
+    </div>
+
+    <!-- Kanban board -->
+    <div id="kanban-board" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <!-- Columns will be generated dynamically -->
+        <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
+        <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
+        <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="hidden text-center py-12">
+        <i class="fas fa-ticket-alt text-gray-400 text-5xl mb-4"></i>
+        <p class="text-gray-500 text-xl mb-4">No tickets found</p>
+        <p class="text-gray-400 mb-4">Create your first ticket to get started</p>
+        <button id="empty-new-ticket-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
+            <i class="fas fa-plus mr-2"></i> Create Ticket
+        </button>
+    </div>
+
+    <!-- Ticket Modal -->
+    <div id="ticket-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-lg">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h2 id="modal-title" class="text-xl font-bold">New Ticket</h2>
+                <button class="modal-close text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-content">
+                <form id="ticket-form" class="p-6">
+                    <input type="hidden" id="ticket-id" value="">
+                    <input type="hidden" id="ticket-project-id" value="">
+                    
+                    <div class="mb-4">
+                        <label for="ticket-type" class="block text-gray-700 mb-2">Type</label>
+                        <select id="ticket-type" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            <!-- Ticket types will be loaded here -->
+                            <option value="">Loading types...</option>
+                        </select>
                     </div>
                     
-                    <label for="file-upload" class="custom-file-upload">
-                        <i class="fas fa-cloud-upload-alt mr-2"></i> Add Attachment
-                    </label>
-                    <input id="file-upload" type="file" class="file-input" />
-                </div>
-                
-                <!-- Add this after the attachments container in the ticket modal form -->
-                <div id="comments-container" class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Comments</label>
-                    <div id="comments-list" class="space-y-2 mb-4 border rounded p-2">
-                        <div id="no-comments-message" class="text-gray-500 italic">No comments yet</div>
+                    <div class="mb-4">
+                        <label for="ticket-priority" class="block text-gray-700 mb-2">Priority</label>
+                        <select id="ticket-priority" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <!-- Ticket priorities will be loaded here -->
+                            <option value="">Loading priorities...</option>
+                        </select>
                     </div>
-                    <div class="flex space-x-2">
-                        <textarea id="comment-input" rows="3" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Add a comment..."></textarea>
-                        <button type="button" id="add-comment-btn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Add Comment</button>
+                    
+                    <div class="mb-4">
+                        <label for="ticket-what" class="block text-gray-700 mb-2">What</label>
+                        <textarea id="ticket-what" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="2" required></textarea>
                     </div>
-                </div>
-                
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" class="modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
-                        Cancel
-                    </button>
-                    <button type="submit" id="save-ticket-btn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                        Save Ticket
-                    </button>
-                </div>
-            </form>
+                    
+                    <div class="mb-4">
+                        <label for="ticket-why" class="block text-gray-700 mb-2">Why</label>
+                        <textarea id="ticket-why" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="ticket-acceptance" class="block text-gray-700 mb-2">Acceptance Criteria</label>
+                        <textarea id="ticket-acceptance" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="ticket-test-steps" class="block text-gray-700 mb-2">Test Steps</label>
+                        <textarea id="ticket-test-steps" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="Steps to test this functionality..."></textarea>
+                    </div>
+                    
+                    <div class="mb-4" id="ticket-state-container">
+                        <label for="ticket-state" class="block text-gray-700 mb-2">State</label>
+                        <select id="ticket-state" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            <!-- Ticket states will be loaded here -->
+                            <option value="">Loading states...</option>
+                        </select>
+                    </div>
+                    
+                    <!-- File attachments section (visible only when editing) -->
+                    <div id="attachments-container" class="mb-4 hidden">
+                        <label class="block text-gray-700 mb-2">Attachments</label>
+                        <div id="attachments-list" class="bg-gray-50 rounded p-2 mb-2">
+                            <p id="no-attachments-message" class="text-gray-500 text-sm">No attachments yet</p>
+                        </div>
+                        
+                        <label for="file-upload" class="custom-file-upload">
+                            <i class="fas fa-cloud-upload-alt mr-2"></i> Add Attachment
+                        </label>
+                        <input id="file-upload" type="file" class="file-input" />
+                    </div>
+                    
+                    <!-- Add this after the attachments container in the ticket modal form -->
+                    <div id="comments-container" class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Comments</label>
+                        <div id="comments-list" class="space-y-2 mb-4 border rounded p-2">
+                            <div id="no-comments-message" class="text-gray-500 italic">No comments yet</div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <textarea id="comment-input" rows="3" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Add a comment..."></textarea>
+                            <button type="button" id="add-comment-btn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Add Comment</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button type="button" class="modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
+                            Cancel
+                        </button>
+                        <button type="submit" id="save-ticket-btn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                            Save Ticket
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Delete Confirmation Modal -->
-<div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-        <div class="mb-4">
-            <h2 class="text-xl font-bold">Confirm Delete</h2>
-            <p class="text-gray-600 mt-2">Are you sure you want to delete this ticket?</p>
-        </div>
-        
-        <div class="flex justify-end space-x-3">
-            <button type="button" class="delete-modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
-                Cancel
-            </button>
-            <button type="button" id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                Delete Ticket
-            </button>
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+            <div class="mb-4">
+                <h2 class="text-xl font-bold">Confirm Delete</h2>
+                <p class="text-gray-600 mt-2">Are you sure you want to delete this ticket?</p>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <button type="button" class="delete-modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
+                    Cancel
+                </button>
+                <button type="button" id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                    Delete Ticket
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -390,6 +404,7 @@
         const ticketId = document.getElementById('ticket-id');
         const ticketProjectId = document.getElementById('ticket-project-id');
         const ticketType = document.getElementById('ticket-type');
+        const ticketPriority = document.getElementById('ticket-priority');
         const ticketWhat = document.getElementById('ticket-what');
         const ticketWhy = document.getElementById('ticket-why');
         const ticketAcceptance = document.getElementById('ticket-acceptance');
@@ -410,17 +425,46 @@
         const commentInput = document.getElementById('comment-input');
         const addCommentBtn = document.getElementById('add-comment-btn');
         
-        // State
+        // Global variables
         let currentProjectId = null;
-        let ticketStates = [];
         let ticketTypes = [];
+        let ticketStates = [];
+        let ticketPriorities = [];
         let draggedTicket = null;
         let currentTicketAttachments = [];
         let currentTicketComments = [];
         
-        // Get project_id from URL
+        // Check for URL query parameters
         const urlParams = new URLSearchParams(window.location.search);
         const projectIdParam = urlParams.get('project_id');
+        
+        // If a project_id is provided in the URL, hide the project selection and load tickets
+        if (projectIdParam) {
+            const parsedProjectId = parseInt(projectIdParam);
+            currentProjectId = parsedProjectId;
+            document.getElementById('project-selection').classList.add('hidden');
+            document.getElementById('board-view').classList.remove('hidden');
+            document.getElementById('project-title-container').classList.remove('hidden');
+            
+            // Load data
+            Promise.all([
+                loadTicketTypes(),
+                loadTicketStates(),
+                loadTicketPriorities(),
+                loadProject(parsedProjectId),
+                loadTickets(parsedProjectId)
+            ]).catch(error => {
+                showError('Failed to load board data: ' + error.message);
+            });
+        } else {
+            // Otherwise, show the project selection form
+            document.getElementById('project-selection').classList.remove('hidden');
+            document.getElementById('board-view').classList.add('hidden');
+            document.getElementById('project-title-container').classList.add('hidden');
+            
+            // Load projects for the dropdown
+            loadProjects();
+        }
         
         // Add event listeners
         newTicketBtn.addEventListener('click', () => openTicketModal());
@@ -444,23 +488,6 @@
         });
         
         fileUpload.addEventListener('change', handleFileUpload);
-        
-        // Initialize
-        Promise.all([
-            loadTicketTypes(),
-            loadTicketStates()
-        ]).then(() => {
-            if (projectIdParam) {
-                currentProjectId = parseInt(projectIdParam);
-                loadProject(currentProjectId);
-                loadTickets(currentProjectId);
-                newTicketBtn.disabled = false;
-            } else {
-                projectHeader.classList.add('hidden');
-                projectSelection.classList.remove('hidden');
-                loadProjects();
-            }
-        });
         
         // Functions
         function loadProject(projectId) {
@@ -501,44 +528,64 @@
         
         function loadTicketTypes() {
             return fetchJSON('/tickets/types')
-                .then(types => {
-                    ticketTypes = types;
-                    ticketType.innerHTML = '';
+                .then(data => {
+                    ticketTypes = data;
                     
-                    types.forEach(type => {
+                    // Update the ticket type dropdown
+                    ticketType.innerHTML = '';
+                    data.forEach(type => {
                         const option = document.createElement('option');
                         option.value = type.id;
                         option.textContent = type.name;
                         ticketType.appendChild(option);
                     });
-                })
-                .catch(error => {
-                    showError('Failed to load ticket types: ' + error.message);
                 });
         }
         
         function loadTicketStates() {
             return fetchJSON('/tickets/states')
-                .then(states => {
-                    ticketStates = states;
-                    ticketState.innerHTML = '';
+                .then(data => {
+                    ticketStates = data;
                     
-                    states.forEach(state => {
+                    // Update the ticket state dropdown
+                    ticketState.innerHTML = '';
+                    data.forEach(state => {
                         const option = document.createElement('option');
                         option.value = state.id;
                         option.textContent = state.name;
                         ticketState.appendChild(option);
                     });
                     
-                    // Create Kanban board columns
-                    renderKanbanColumns(states);
-                })
-                .catch(error => {
-                    showError('Failed to load ticket states: ' + error.message);
+                    // Create columns for each state
+                    createColumns(data);
                 });
         }
         
-        function renderKanbanColumns(states) {
+        function loadTicketPriorities() {
+            return fetchJSON('/tickets/priorities')
+                .then(data => {
+                    ticketPriorities = data;
+                    
+                    // Update the ticket priority dropdown
+                    ticketPriority.innerHTML = '';
+                    
+                    // Add empty option for no priority
+                    const emptyOption = document.createElement('option');
+                    emptyOption.value = '';
+                    emptyOption.textContent = '-- Select Priority --';
+                    ticketPriority.appendChild(emptyOption);
+                    
+                    // Add all priority options
+                    data.forEach(priority => {
+                        const option = document.createElement('option');
+                        option.value = priority.id;
+                        option.textContent = priority.name;
+                        ticketPriority.appendChild(option);
+                    });
+                });
+        }
+        
+        function createColumns(states) {
             kanbanBoard.innerHTML = '';
             
             states.forEach(state => {
@@ -687,6 +734,15 @@
             what.className = 'font-semibold mb-2';
             what.textContent = ticket.what;
             
+            // Add priority badge if present
+            if (ticket.priority) {
+                const priorityBadge = document.createElement('div');
+                priorityBadge.className = `text-xs inline-block my-1 py-1 px-2 rounded ${getPriorityClass(ticket.priority_name)}`;
+                priorityBadge.textContent = `Priority: ${ticket.priority_name}`;
+                what.appendChild(document.createElement('br'));
+                what.appendChild(priorityBadge);
+            }
+            
             let additionalInfo = '';
             if (ticket.why) {
                 additionalInfo += `<div class="mb-1"><span class="font-semibold text-gray-600">Why:</span> ${ticket.why}</div>`;
@@ -771,6 +827,29 @@
             }
         }
         
+        function getPriorityClass(priority) {
+            if (!priority) return '';
+            
+            switch (priority.toLowerCase()) {
+                case 'critical':
+                    return 'bg-red-100 text-red-800';
+                case 'high':
+                    return 'bg-orange-100 text-orange-800';
+                case 'medium':
+                    return 'bg-yellow-100 text-yellow-800';
+                case 'low':
+                    return 'bg-green-100 text-green-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
+        
+        function getPriorityNameById(priorityId) {
+            if (!priorityId) return null;
+            const priority = ticketPriorities.find(p => p.id === parseInt(priorityId));
+            return priority ? priority.name : null;
+        }
+        
         function openTicketModal(ticket = null) {
             ticketForm.reset();
             
@@ -779,6 +858,7 @@
                 ticketId.value = ticket.id;
                 ticketProjectId.value = ticket.project_id;
                 ticketType.value = ticket.type;
+                ticketPriority.value = ticket.priority;
                 ticketWhat.value = ticket.what;
                 ticketWhy.value = ticket.why || '';
                 ticketAcceptance.value = ticket.acceptance_criteria || '';
@@ -842,6 +922,7 @@
             const ticketData = {
                 project_id: parseInt(ticketProjectId.value),
                 type: parseInt(ticketType.value),
+                priority: parseInt(ticketPriority.value),
                 what: ticketWhat.value,
                 why: ticketWhy.value,
                 acceptance_criteria: ticketAcceptance.value,

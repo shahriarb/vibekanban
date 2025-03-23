@@ -6,7 +6,7 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request, render_template, current_app
 from app import db
 from app.models.project import Project
-from app.models.ticket import Ticket, TicketType, TicketState
+from app.models.ticket import Ticket, TicketType, TicketState, TicketPriority
 from app.models.metric import Metric
 
 bp = Blueprint('tickets', __name__, url_prefix='/tickets')
@@ -121,6 +121,8 @@ def update_ticket(ticket_id: int) -> Union[Dict, Tuple[Dict, int]]:
         
     if 'type' in data:
         ticket.type = data['type']
+    if 'priority' in data:
+        ticket.priority = data['priority'] if data['priority'] else None
     if 'what' in data:
         ticket.what = data['what']
     if 'why' in data:
@@ -207,4 +209,15 @@ def get_ticket_states() -> Dict:
         A JSON response with all ticket states.
     """
     states = TicketState.query.all()
-    return jsonify([s.to_dict() for s in states]) 
+    return jsonify([s.to_dict() for s in states])
+
+@bp.route('/priorities', methods=['GET'])
+def get_ticket_priorities() -> Dict:
+    """
+    Get all ticket priorities.
+    
+    Returns:
+        A JSON response with all ticket priorities.
+    """
+    priorities = TicketPriority.query.all()
+    return jsonify([p.to_dict() for p in priorities]) 

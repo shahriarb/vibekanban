@@ -32,6 +32,33 @@ class TicketType(db.Model):
             'name': self.name
         }
 
+class TicketPriority(db.Model):
+    """
+    Ticket priority model representing the different priority levels a ticket can have.
+    
+    Attributes:
+        id: The unique identifier for the ticket priority.
+        name: The name of the ticket priority (e.g., 'low', 'medium', 'high', 'critical').
+    """
+    __tablename__ = 'ticket_priorities'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False, unique=True)
+    
+    tickets = db.relationship('Ticket', backref='priority_info', lazy=True)
+    
+    def to_dict(self) -> Dict:
+        """
+        Convert the ticket priority to a dictionary.
+        
+        Returns:
+            Dict: A dictionary representation of the ticket priority.
+        """
+        return {
+            'id': self.id,
+            'name': self.name
+        }
+
 class TicketState(db.Model):
     """
     Ticket state model representing the different states a ticket can be in.
@@ -67,6 +94,7 @@ class Ticket(db.Model):
         id: The unique identifier for the ticket.
         project_id: The ID of the project this ticket belongs to.
         type: The ID of the ticket type.
+        priority: The ID of the ticket priority.
         state: The ID of the ticket state.
         what: Description of what the ticket is about.
         why: Explanation of why this ticket is important.
@@ -83,6 +111,7 @@ class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), nullable=False)
     type = db.Column(db.Integer, db.ForeignKey('ticket_types.id'), nullable=False)
+    priority = db.Column(db.Integer, db.ForeignKey('ticket_priorities.id'), nullable=True)
     state = db.Column(db.Integer, db.ForeignKey('ticket_states.id'), nullable=False)
     what = db.Column(db.Text, nullable=False)
     why = db.Column(db.Text, nullable=True)
@@ -112,6 +141,8 @@ class Ticket(db.Model):
             'project_id': self.project_id,
             'type': self.type,
             'type_name': self.type_info.name if self.type_info else None,
+            'priority': self.priority,
+            'priority_name': self.priority_info.name if self.priority_info else None,
             'state': self.state,
             'state_name': self.state_info.name if self.state_info else None,
             'what': self.what,
@@ -137,6 +168,7 @@ class Ticket(db.Model):
         return Ticket(
             project_id=data.get('project_id'),
             type=data.get('type'),
+            priority=data.get('priority'),
             state=data.get('state'),
             what=data.get('what'),
             why=data.get('why'),
