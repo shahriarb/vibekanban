@@ -4,6 +4,7 @@ Project model for the Kanban board application.
 from typing import Dict, List, Optional
 from datetime import datetime
 from app import db
+from app.models.ticket import Ticket
 
 class Project(db.Model):
     """
@@ -23,7 +24,7 @@ class Project(db.Model):
     created_date = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationship with tickets
-    tickets = db.relationship('Ticket', backref='project', lazy=True, cascade='all, delete-orphan')
+    tickets = db.relationship('app.models.ticket.Ticket', backref='project', lazy=True, cascade='all, delete-orphan')
     
     def to_dict(self) -> Dict:
         """

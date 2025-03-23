@@ -73,6 +73,9 @@ class Ticket(db.Model):
         acceptance_criteria: Criteria for considering this ticket done.
         created_date: The date and time when the ticket was created.
         completed_date: The date and time when the ticket was completed.
+        metrics: List of metrics associated with this ticket.
+        attachments: List of attachments associated with this ticket.
+        comments: List of comments associated with this ticket.
     """
     __tablename__ = 'tickets'
     
@@ -91,6 +94,9 @@ class Ticket(db.Model):
     
     # Relationship with attachments
     attachments = db.relationship('Attachment', backref='ticket', lazy=True, cascade='all, delete-orphan')
+    
+    # Relationship with comments
+    comments = db.relationship('Comment', back_populates='ticket', lazy=True, cascade='all, delete-orphan')
     
     def to_dict(self) -> Dict:
         """
