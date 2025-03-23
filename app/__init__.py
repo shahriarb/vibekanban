@@ -44,11 +44,12 @@ def create_app(test_config=None):
     app.cli.add_command(init_db_command)
 
     # Register blueprints
-    from app.controllers import projects, tickets, mcp, metrics
+    from app.controllers import projects, tickets, mcp, metrics, attachments
     app.register_blueprint(projects.bp)
     app.register_blueprint(tickets.bp)
     app.register_blueprint(mcp.bp)
     app.register_blueprint(metrics.bp)
+    app.register_blueprint(attachments.bp)
     
     # Add context processor for template variables
     @app.context_processor

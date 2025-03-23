@@ -10,6 +10,28 @@ from app.models.mcp_config import MCPConfig
 
 bp = Blueprint('mcp', __name__, url_prefix='/mcp')
 
+@bp.route('/', methods=['GET'])
+def mcp_root() -> Dict:
+    """
+    Root MCP endpoint - provides basic status and API information.
+    
+    Returns:
+        A JSON response with MCP status and available endpoints.
+    """
+    return jsonify({
+        'status': 'online',
+        'name': 'Kanban Board MCP',
+        'version': '1.0',
+        'endpoints': {
+            'GET /': 'This status information',
+            'GET /config': 'Get current MCP configuration',
+            'POST /config': 'Update MCP configuration',
+            'GET /status': 'Get Kanban board status',
+            'POST /create-ticket': 'Create a new ticket',
+            'PUT /update-ticket/<id>': 'Update a ticket state'
+        }
+    })
+
 @bp.route('/config', methods=['GET'])
 def get_config() -> Dict:
     """

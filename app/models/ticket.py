@@ -89,6 +89,9 @@ class Ticket(db.Model):
     # Relationship with metrics
     metrics = db.relationship('Metric', backref='ticket', lazy=True, cascade='all, delete-orphan')
     
+    # Relationship with attachments
+    attachments = db.relationship('Attachment', backref='ticket', lazy=True, cascade='all, delete-orphan')
+    
     def to_dict(self) -> Dict:
         """
         Convert the ticket to a dictionary.
@@ -107,7 +110,8 @@ class Ticket(db.Model):
             'why': self.why,
             'acceptance_criteria': self.acceptance_criteria,
             'created_date': self.created_date.isoformat() if self.created_date else None,
-            'completed_date': self.completed_date.isoformat() if self.completed_date else None
+            'completed_date': self.completed_date.isoformat() if self.completed_date else None,
+            'attachments': [attachment.to_dict() for attachment in self.attachments] if self.attachments else []
         }
     
     @staticmethod
