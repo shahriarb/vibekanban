@@ -1,5 +1,9 @@
 """
 MCP controller for integration with Cursor.
+
+This controller implements a simplified version of the Model Context Protocol
+to provide integration with Cursor and other AI assistants. It exposes
+endpoints that follow MCP concepts of tools and resources.
 """
 from typing import Dict, List, Tuple, Union
 from flask import Blueprint, jsonify, request, render_template, current_app
@@ -7,6 +11,7 @@ from app import db
 from app.models.project import Project
 from app.models.ticket import Ticket, TicketType, TicketState
 from app.models.mcp_config import MCPConfig
+from app.models.comments import Comment
 
 bp = Blueprint('mcp', __name__, url_prefix='/mcp')
 
@@ -22,13 +27,22 @@ def mcp_root() -> Dict:
         'status': 'online',
         'name': 'Kanban Board MCP',
         'version': '1.0',
+        'capabilities': {
+            'tools': True,  # We support tool execution
+            'resources': False,  # We don't support resource access
+            'prompts': False,  # We don't support prompt templates
+        },
         'endpoints': {
             'GET /': 'This status information',
             'GET /config': 'Get current MCP configuration',
             'POST /config': 'Update MCP configuration',
             'GET /status': 'Get Kanban board status',
             'POST /create-ticket': 'Create a new ticket',
-            'PUT /update-ticket/<id>': 'Update a ticket state'
+            'PUT /update-ticket/<id>': 'Update a ticket state',
+            'GET /tools': 'Get available tools',
+            'GET /projects': 'List all projects',
+            'GET /tickets': 'List all tickets',
+            'POST /comments/<ticket_id>': 'Add a comment to a ticket'
         }
     })
 
@@ -72,6 +86,75 @@ def settings() -> str:
         The rendered HTML template for the MCP settings.
     """
     return render_template('mcp/settings.html')
+
+@bp.route('/tools', methods=['GET'])
+def get_tools() -> Dict:
+    """
+    Get available MCP tools.
+    
+    Returns:
+        A JSON response with the available tools.
+    """
+    tools = [
+        {
+            'name': 'get_status',
+            'description': 'Get the current status of the Kanban board',
+            'endpoint': '/mcp/status',
+            'method': 'GET',
+            'parameters': []
+        },
+        {
+            'name': 'create_ticket',
+            'description': 'Create a new ticket in the Kanban board',
+            'endpoint': '/mcp/create-ticket',
+            'method': 'POST',
+            'parameters': [
+                {'name': 'project_id', 'type': 'integer', 'required': True, 'description': 'The ID of the project this ticket belongs to'},
+                {'name': 'what', 'type': 'string', 'required': True, 'description': 'Description of what needs to be done'},
+                {'name': 'why', 'type': 'string', 'required': False, 'description': 'Explanation of why this ticket is important'},
+                {'name': 'acceptance_criteria', 'type': 'string', 'required': False, 'description': 'Criteria for considering this ticket done'},
+                {'name': 'test_steps', 'type': 'string', 'required': False, 'description': 'Steps to test this ticket'}
+            ]
+        },
+        {
+            'name': 'update_ticket_state',
+            'description': 'Update a ticket\'s state in the Kanban board',
+            'endpoint': '/mcp/update-ticket/{ticket_id}',
+            'method': 'PUT',
+            'parameters': [
+                {'name': 'ticket_id', 'type': 'integer', 'required': True, 'description': 'The ID of the ticket to update'},
+                {'name': 'state', 'type': 'string', 'required': True, 'description': 'The new state name (e.g., \'backlog\', \'in progress\', \'done\')'}
+            ]
+        },
+        {
+            'name': 'list_projects',
+            'description': 'List all projects in the Kanban board',
+            'endpoint': '/mcp/projects',
+            'method': 'GET',
+            'parameters': []
+        },
+        {
+            'name': 'list_tickets',
+            'description': 'List tickets, optionally filtered by project',
+            'endpoint': '/mcp/tickets',
+            'method': 'GET',
+            'parameters': [
+                {'name': 'project_id', 'type': 'integer', 'required': False, 'description': 'The ID of the project to filter tickets by'}
+            ]
+        },
+        {
+            'name': 'add_comment',
+            'description': 'Add a comment to a ticket',
+            'endpoint': '/mcp/comments/{ticket_id}',
+            'method': 'POST',
+            'parameters': [
+                {'name': 'ticket_id', 'type': 'integer', 'required': True, 'description': 'The ID of the ticket to comment on'},
+                {'name': 'content', 'type': 'string', 'required': True, 'description': 'The comment text'}
+            ]
+        }
+    ]
+    
+    return jsonify(tools)
 
 @bp.route('/create-ticket', methods=['POST'])
 def create_ticket() -> Tuple[Dict, int]:
@@ -170,4 +253,70 @@ def get_status() -> Dict:
         'states': state_counts,
         'projects': project_info,
         'total_tickets': Ticket.query.count()
-    }) 
+    })
+
+@bp.route('/projects', methods=['GET'])
+def get_projects() -> Dict:
+    """
+    Get all projects for MCP integration.
+    
+    Returns:
+        A JSON response with all projects.
+    """
+    projects = Project.query.all()
+    return jsonify([project.to_dict() for project in projects])
+
+@bp.route('/tickets', methods=['GET'])
+def get_tickets() -> Dict:
+    """
+    Get tickets for MCP integration, optionally filtered by project.
+    
+    Returns:
+        A JSON response with tickets data.
+    """
+    project_id = request.args.get('project_id', type=int)
+    
+    query = Ticket.query
+    
+    if project_id:
+        query = query.filter_by(project_id=project_id)
+        
+    tickets = query.all()
+    return jsonify([ticket.to_dict() for ticket in tickets])
+
+@bp.route('/comments/<int:ticket_id>', methods=['POST'])
+def add_comment(ticket_id: int) -> Union[Dict, Tuple[Dict, int]]:
+    """
+    Add a comment to a ticket for MCP integration.
+    
+    Args:
+        ticket_id: The ID of the ticket to comment on.
+        
+    Returns:
+        A JSON response with the created comment data.
+    """
+    ticket = Ticket.query.get(ticket_id)
+    
+    if not ticket:
+        return jsonify({'error': 'Ticket not found'}), 404
+        
+    data = request.get_json()
+    
+    if not data or 'content' not in data:
+        return jsonify({'error': 'Comment content is required'}), 400
+        
+    comment = Comment(
+        ticket_id=ticket_id,
+        content=data['content']
+    )
+    
+    db.session.add(comment)
+    db.session.commit()
+    
+    return jsonify({
+        'id': comment.id,
+        'ticket_id': comment.ticket_id,
+        'content': comment.content,
+        'created_date': comment.created_date.isoformat() if comment.created_date else None,
+        'updated_date': comment.updated_date.isoformat() if comment.updated_date else None
+    }), 201 
