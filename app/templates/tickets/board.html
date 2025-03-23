@@ -203,9 +203,9 @@
     </div>
 
     <!-- Ticket Modal -->
-    <div id="ticket-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-lg">
-            <div class="flex justify-between items-center p-4 border-b">
+    <div id="ticket-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
                 <h2 id="modal-title" class="text-xl font-bold">New Ticket</h2>
                 <button class="modal-close text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times"></i>
@@ -213,47 +213,78 @@
             </div>
             
             <div class="modal-content">
-                <form id="ticket-form" class="p-6">
+                <form id="ticket-form" class="p-4">
                     <input type="hidden" id="ticket-id" value="">
                     <input type="hidden" id="ticket-project-id" value="">
                     
-                    <div class="mb-4">
-                        <label for="ticket-type" class="block text-gray-700 mb-2">Type</label>
-                        <select id="ticket-type" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                            <!-- Ticket types will be loaded here -->
-                            <option value="">Loading types...</option>
-                        </select>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="col-span-1">
+                            <label for="ticket-type" class="block text-gray-700 mb-2">Type</label>
+                            <select id="ticket-type" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                                <!-- Ticket types will be loaded here -->
+                                <option value="">Loading types...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-span-1">
+                            <label for="ticket-priority" class="block text-gray-700 mb-2">Priority</label>
+                            <select id="ticket-priority" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <!-- Ticket priorities will be loaded here -->
+                                <option value="">Loading priorities...</option>
+                            </select>
+                        </div>
                     </div>
                     
-                    <div class="mb-4">
-                        <label for="ticket-priority" class="block text-gray-700 mb-2">Priority</label>
-                        <select id="ticket-priority" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <!-- Ticket priorities will be loaded here -->
-                            <option value="">Loading priorities...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-4">
+                    <div class="mt-4">
                         <label for="ticket-what" class="block text-gray-700 mb-2">What</label>
                         <textarea id="ticket-what" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="2" required></textarea>
                     </div>
                     
-                    <div class="mb-4">
+                    <div class="mt-4">
                         <label for="ticket-why" class="block text-gray-700 mb-2">Why</label>
                         <textarea id="ticket-why" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="2"></textarea>
                     </div>
                     
-                    <div class="mb-6">
+                    <div class="mt-4">
                         <label for="ticket-acceptance" class="block text-gray-700 mb-2">Acceptance Criteria</label>
                         <textarea id="ticket-acceptance" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3"></textarea>
                     </div>
                     
-                    <div class="mb-6">
+                    <div class="mt-4">
                         <label for="ticket-test-steps" class="block text-gray-700 mb-2">Test Steps</label>
                         <textarea id="ticket-test-steps" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="Steps to test this functionality..."></textarea>
                     </div>
                     
-                    <div class="mb-4" id="ticket-state-container">
+                    <!-- Dependencies section -->
+                    <div id="dependencies-container" class="mt-5 hidden">
+                        <label class="block text-gray-700 mb-2 font-medium">Dependencies</label>
+                        <div id="dependencies-list" class="bg-gray-50 rounded p-2 mb-2 max-h-[150px] overflow-y-auto">
+                            <p id="no-dependencies-message" class="text-gray-500 text-sm">No dependencies</p>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-2">
+                            <select id="add-dependency-select" class="w-full sm:flex-grow border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                                <option value="">-- Select Ticket --</option>
+                                <!-- Other tickets will be loaded here -->
+                            </select>
+                            <button type="button" id="add-dependency-btn" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm">
+                                Add
+                            </button>
+                        </div>
+                        
+                        <div id="dependency-status" class="p-2 rounded mt-2 hidden">
+                            <!-- Will show dependency status -->
+                        </div>
+                    </div>
+                    
+                    <div id="dependents-container" class="mt-5 hidden">
+                        <label class="block text-gray-700 mb-2 font-medium">Tickets that depend on this</label>
+                        <div id="dependents-list" class="bg-gray-50 rounded p-2 max-h-[150px] overflow-y-auto">
+                            <p id="no-dependents-message" class="text-gray-500 text-sm">No dependent tickets</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5" id="ticket-state-container">
                         <label for="ticket-state" class="block text-gray-700 mb-2">State</label>
                         <select id="ticket-state" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
                             <!-- Ticket states will be loaded here -->
@@ -262,27 +293,27 @@
                     </div>
                     
                     <!-- File attachments section (visible only when editing) -->
-                    <div id="attachments-container" class="mb-4 hidden">
-                        <label class="block text-gray-700 mb-2">Attachments</label>
-                        <div id="attachments-list" class="bg-gray-50 rounded p-2 mb-2">
+                    <div id="attachments-container" class="mt-5 hidden">
+                        <label class="block text-gray-700 mb-2 font-medium">Attachments</label>
+                        <div id="attachments-list" class="bg-gray-50 rounded p-2 mb-2 max-h-[150px] overflow-y-auto">
                             <p id="no-attachments-message" class="text-gray-500 text-sm">No attachments yet</p>
                         </div>
                         
-                        <label for="file-upload" class="custom-file-upload">
+                        <label for="file-upload" class="custom-file-upload inline-block px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 cursor-pointer">
                             <i class="fas fa-cloud-upload-alt mr-2"></i> Add Attachment
                         </label>
-                        <input id="file-upload" type="file" class="file-input" />
+                        <input id="file-upload" type="file" class="file-input hidden" />
                     </div>
                     
-                    <!-- Add this after the attachments container in the ticket modal form -->
-                    <div id="comments-container" class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Comments</label>
-                        <div id="comments-list" class="space-y-2 mb-4 border rounded p-2">
+                    <!-- Comments section -->
+                    <div id="comments-container" class="mt-5 hidden">
+                        <label class="block text-gray-700 mb-2 font-medium">Comments</label>
+                        <div id="comments-list" class="space-y-2 mb-4 border rounded p-2 max-h-[200px] overflow-y-auto">
                             <div id="no-comments-message" class="text-gray-500 italic">No comments yet</div>
                         </div>
-                        <div class="flex space-x-2">
-                            <textarea id="comment-input" rows="3" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Add a comment..."></textarea>
-                            <button type="button" id="add-comment-btn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Add Comment</button>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                            <textarea id="comment-input" rows="2" class="w-full sm:flex-grow rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Add a comment..."></textarea>
+                            <button type="button" id="add-comment-btn" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Add Comment</button>
                         </div>
                     </div>
                     
@@ -425,6 +456,17 @@
         const commentInput = document.getElementById('comment-input');
         const addCommentBtn = document.getElementById('add-comment-btn');
         
+        // Dependency-related DOM elements
+        const dependenciesContainer = document.getElementById('dependencies-container');
+        const dependenciesList = document.getElementById('dependencies-list');
+        const noDependenciesMessage = document.getElementById('no-dependencies-message');
+        const addDependencySelect = document.getElementById('add-dependency-select');
+        const addDependencyBtn = document.getElementById('add-dependency-btn');
+        const dependencyStatus = document.getElementById('dependency-status');
+        const dependentsContainer = document.getElementById('dependents-container');
+        const dependentsList = document.getElementById('dependents-list');
+        const noDependentsMessage = document.getElementById('no-dependents-message');
+        
         // Global variables
         let currentProjectId = null;
         let ticketTypes = [];
@@ -433,6 +475,10 @@
         let draggedTicket = null;
         let currentTicketAttachments = [];
         let currentTicketComments = [];
+        let allProjectTickets = [];
+        let currentTicketDependencies = [];
+        let currentTicketDependents = [];
+        let currentTicketId = null;
         
         // Check for URL query parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -488,6 +534,9 @@
         });
         
         fileUpload.addEventListener('change', handleFileUpload);
+        
+        // Add event listeners for the dependency functionality
+        addDependencyBtn.addEventListener('click', handleAddDependency);
         
         // Functions
         function loadProject(projectId) {
@@ -683,6 +732,15 @@
             card.dataset.id = ticket.id;
             card.dataset.state = ticket.state;
             
+            // Add classes based on dependencies status
+            if (ticket.dependencies && ticket.dependencies.length > 0) {
+                if (!ticket.all_dependencies_resolved) {
+                    card.classList.add('border-l-4', 'border-orange-500');
+                } else {
+                    card.classList.add('border-l-4', 'border-green-500');
+                }
+            }
+            
             // Replace drag events with click event
             card.addEventListener('click', function(e) {
                 // Don't trigger if clicking on a button or link inside the card
@@ -741,6 +799,23 @@
                 priorityBadge.textContent = `Priority: ${ticket.priority_name}`;
                 what.appendChild(document.createElement('br'));
                 what.appendChild(priorityBadge);
+            }
+            
+            // Add dependency badges if present
+            if (ticket.dependencies && ticket.dependencies.length > 0) {
+                const dependencyBadge = document.createElement('div');
+                dependencyBadge.className = 'text-xs inline-block my-1 py-1 px-2 rounded';
+                
+                if (!ticket.all_dependencies_resolved) {
+                    dependencyBadge.className += ' bg-orange-100 text-orange-800';
+                    dependencyBadge.textContent = `Dependencies: ${ticket.dependencies.length} (Not all resolved)`;
+                } else {
+                    dependencyBadge.className += ' bg-green-100 text-green-800';
+                    dependencyBadge.textContent = `Dependencies: ${ticket.dependencies.length} (All resolved)`;
+                }
+                
+                what.appendChild(document.createElement('br'));
+                what.appendChild(dependencyBadge);
             }
             
             let additionalInfo = '';
@@ -844,6 +919,23 @@
             }
         }
         
+        function getStateClass(state) {
+            if (!state) return 'bg-gray-100 text-gray-800';
+            
+            switch (state.toLowerCase()) {
+                case 'backlog':
+                    return 'bg-gray-100 text-gray-800';
+                case 'ready':
+                    return 'bg-blue-100 text-blue-800';
+                case 'in progress':
+                    return 'bg-yellow-100 text-yellow-800';
+                case 'done':
+                    return 'bg-green-100 text-green-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
+        
         function getPriorityNameById(priorityId) {
             if (!priorityId) return null;
             const priority = ticketPriorities.find(p => p.id === parseInt(priorityId));
@@ -854,11 +946,12 @@
             ticketForm.reset();
             
             if (ticket) {
+                currentTicketId = ticket.id;
                 modalTitle.textContent = 'Edit Ticket';
                 ticketId.value = ticket.id;
                 ticketProjectId.value = ticket.project_id;
                 ticketType.value = ticket.type;
-                ticketPriority.value = ticket.priority;
+                ticketPriority.value = ticket.priority || '';
                 ticketWhat.value = ticket.what;
                 ticketWhy.value = ticket.why || '';
                 ticketAcceptance.value = ticket.acceptance_criteria || '';
@@ -871,9 +964,37 @@
                 loadTicketAttachments(ticket.id);
                 
                 // Show comments container and load existing comments
-                document.getElementById('comments-container').classList.remove('hidden');
+                commentsContainer.classList.remove('hidden');
                 loadTicketComments(ticket.id);
+                
+                // Show dependencies containers and load dependencies
+                dependenciesContainer.classList.remove('hidden');
+                dependentsContainer.classList.remove('hidden');
+                
+                // If ticket already has dependencies in the data, set them directly
+                if (ticket.dependencies && ticket.dependencies.length > 0) {
+                    currentTicketDependencies = ticket.dependencies;
+                    renderDependencies();
+                }
+                
+                // If ticket already has dependents in the data, set them directly
+                if (ticket.dependents && ticket.dependents.length > 0) {
+                    currentTicketDependents = ticket.dependents;
+                    renderDependents();
+                }
+                
+                // Update dependency status if we have the data
+                if (typeof ticket.all_dependencies_resolved !== 'undefined') {
+                    updateDependencyStatus(ticket.all_dependencies_resolved);
+                }
+                
+                // Always load fresh dependencies data from the server
+                loadTicketDependencies(ticket.id);
+                
+                // Load all project tickets for dependency selection (except current one)
+                loadProjectTicketsForDependencies(ticket.project_id, ticket.id);
             } else {
+                currentTicketId = null;
                 modalTitle.textContent = 'New Ticket';
                 ticketId.value = '';
                 ticketProjectId.value = currentProjectId;
@@ -884,16 +1005,22 @@
                     ticketState.value = backlogState.id;
                 }
                 
-                // Hide state selection, attachments, and comments for new tickets
+                // Hide state selection, attachments, comments, and dependencies for new tickets
                 ticketStateContainer.classList.add('hidden');
                 attachmentsContainer.classList.add('hidden');
-                document.getElementById('comments-container').classList.add('hidden');
+                commentsContainer.classList.add('hidden');
+                dependenciesContainer.classList.add('hidden');
+                dependentsContainer.classList.add('hidden');
                 
-                // Clear attachments and comments state
+                // Clear state variables
                 currentTicketAttachments = [];
                 currentTicketComments = [];
+                currentTicketDependencies = [];
+                currentTicketDependents = [];
                 renderAttachments();
                 renderComments();
+                renderDependencies();
+                renderDependents();
             }
             
             ticketModal.classList.remove('hidden');
@@ -901,6 +1028,8 @@
         
         function closeTicketModal() {
             ticketModal.classList.add('hidden');
+            // Clear current ticket ID to avoid confusion in future operations
+            currentTicketId = null;
         }
         
         function openDeleteModal(ticketId) {
@@ -943,8 +1072,30 @@
                 body: JSON.stringify(ticketData)
             })
                 .then(() => {
-                    closeTicketModal();
-                    loadTickets(currentProjectId);
+                    // After saving the ticket, if there are dependencies and we have a ticket ID, 
+                    // make sure they are properly saved as well
+                    if (id && currentTicketDependencies && currentTicketDependencies.length > 0) {
+                        // Process each dependency to ensure it's properly saved
+                        const dependenciesToProcess = [...currentTicketDependencies]; // Make a copy to avoid issues with async operations
+                        
+                        // Create a promise for each dependency to be processed
+                        const dependencyPromises = dependenciesToProcess.map(dependency => {
+                            return fetchJSON(`/dependencies/${id}/add/${dependency.id}`, {
+                                method: 'POST'
+                            }).catch(error => {
+                                console.error(`Error saving dependency ${dependency.id}: ${error.message}`);
+                            });
+                        });
+                        
+                        // Wait for all dependency operations to complete
+                        return Promise.all(dependencyPromises).then(() => {
+                            closeTicketModal();
+                            loadTickets(currentProjectId);
+                        });
+                    } else {
+                        closeTicketModal();
+                        loadTickets(currentProjectId);
+                    }
                 })
                 .catch(error => {
                     showError('Failed to save ticket: ' + error.message);
@@ -1460,6 +1611,228 @@
         
         // Add event listener for the add comment button
         document.getElementById('add-comment-btn').addEventListener('click', handleAddComment);
+
+        // Dependency Management Functions
+        function loadProjectTicketsForDependencies(projectId, currentTicketId) {
+            fetchJSON(`/tickets/?project_id=${projectId}`)
+                .then(tickets => {
+                    // Store all tickets for reference
+                    allProjectTickets = tickets;
+                    
+                    // Clear dependency select and add default option
+                    addDependencySelect.innerHTML = '<option value="">-- Select Ticket --</option>';
+                    
+                    // Add options for each ticket except current one
+                    tickets.forEach(ticket => {
+                        if (ticket.id != currentTicketId) {
+                            const option = document.createElement('option');
+                            option.value = ticket.id;
+                            option.textContent = `#${ticket.id}: ${ticket.what}`;
+                            addDependencySelect.appendChild(option);
+                        }
+                    });
+                })
+                .catch(error => {
+                    showError('Failed to load project tickets: ' + error.message);
+                });
+        }
+        
+        function loadTicketDependencies(ticketId) {
+            if (!ticketId) {
+                console.warn('No ticket ID provided to loadTicketDependencies');
+                return Promise.resolve();
+            }
+            
+            // Store the ticket ID for reference
+            currentTicketId = ticketId;
+            
+            console.log(`Loading dependencies for ticket ${ticketId}`);
+            
+            // Show dependency-related UI sections
+            dependenciesContainer.classList.remove('hidden');
+            dependentsContainer.classList.remove('hidden');
+            
+            return fetchJSON(`/dependencies/${ticketId}`)
+                .then(data => {
+                    console.log('Dependencies loaded:', data);
+                    
+                    currentTicketDependencies = data.dependencies || [];
+                    currentTicketDependents = data.dependents || [];
+                    
+                    // Make sure we save the full dependency objects for later use
+                    currentTicketDependencies = currentTicketDependencies.map(dep => ({
+                        id: dep.id,
+                        what: dep.what,
+                        state: dep.state,
+                        state_name: dep.state_name
+                    }));
+                    
+                    renderDependencies();
+                    renderDependents();
+                    
+                    // Update dependency status
+                    updateDependencyStatus(data.all_dependencies_resolved);
+                    
+                    // Load tickets for dependency selection
+                    if (currentProjectId) {
+                        loadProjectTicketsForDependencies(currentProjectId, ticketId);
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to load dependencies:', error);
+                    showError('Failed to load dependencies: ' + error.message);
+                });
+        }
+        
+        function renderDependencies() {
+            if (!dependenciesList) return;
+            
+            if (currentTicketDependencies.length === 0) {
+                dependenciesList.innerHTML = '';
+                noDependenciesMessage.classList.remove('hidden');
+                return;
+            }
+            
+            noDependenciesMessage.classList.add('hidden');
+            dependenciesList.innerHTML = '';
+            
+            currentTicketDependencies.forEach(dependency => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between py-1 border-b last:border-b-0 border-gray-200';
+                
+                const info = document.createElement('div');
+                info.className = 'flex-grow';
+                
+                // State badge
+                const stateBadge = document.createElement('span');
+                stateBadge.className = `inline-block px-2 py-1 mr-2 text-xs rounded ${getStateClass(dependency.state_name)}`;
+                stateBadge.textContent = dependency.state_name;
+                
+                const title = document.createElement('span');
+                title.className = 'text-sm';
+                title.textContent = `#${dependency.id}: ${dependency.what}`;
+                
+                info.appendChild(stateBadge);
+                info.appendChild(title);
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'text-red-500 hover:text-red-700 ml-2';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.addEventListener('click', () => removeDependency(currentTicketId, dependency.id));
+                
+                item.appendChild(info);
+                item.appendChild(removeBtn);
+                
+                dependenciesList.appendChild(item);
+            });
+        }
+        
+        function renderDependents() {
+            if (!dependentsList) return;
+            
+            if (currentTicketDependents.length === 0) {
+                dependentsList.innerHTML = '';
+                noDependentsMessage.classList.remove('hidden');
+                return;
+            }
+            
+            noDependentsMessage.classList.add('hidden');
+            dependentsList.innerHTML = '';
+            
+            currentTicketDependents.forEach(dependent => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between py-1 border-b last:border-b-0 border-gray-200';
+                
+                const info = document.createElement('div');
+                info.className = 'flex-grow';
+                
+                // State badge
+                const stateBadge = document.createElement('span');
+                stateBadge.className = `inline-block px-2 py-1 mr-2 text-xs rounded ${getStateClass(dependent.state_name)}`;
+                stateBadge.textContent = dependent.state_name;
+                
+                const title = document.createElement('span');
+                title.className = 'text-sm';
+                title.textContent = `#${dependent.id}: ${dependent.what}`;
+                
+                info.appendChild(stateBadge);
+                info.appendChild(title);
+                
+                item.appendChild(info);
+                
+                dependentsList.appendChild(item);
+            });
+        }
+        
+        function updateDependencyStatus(allResolved) {
+            if (currentTicketDependencies.length === 0) {
+                dependencyStatus.classList.add('hidden');
+                return;
+            }
+            
+            dependencyStatus.classList.remove('hidden');
+            
+            if (allResolved) {
+                dependencyStatus.className = 'p-2 rounded mt-2 bg-green-100 text-green-800';
+                dependencyStatus.innerHTML = '<i class="fas fa-check-circle mr-1"></i> All dependencies are resolved';
+            } else {
+                dependencyStatus.className = 'p-2 rounded mt-2 bg-orange-100 text-orange-800';
+                dependencyStatus.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> Not all dependencies are resolved';
+            }
+        }
+        
+        function handleAddDependency() {
+            const dependencyId = addDependencySelect.value;
+            
+            if (!dependencyId) {
+                showError('Please select a ticket to add as dependency');
+                return;
+            }
+            
+            if (!currentTicketId) {
+                showError('Current ticket ID is missing. Please save the ticket first.');
+                return;
+            }
+            
+            console.log(`Adding dependency ${dependencyId} to ticket ${currentTicketId}`);
+            
+            // Check if this dependency is already added
+            if (currentTicketDependencies.some(dep => dep.id == dependencyId)) {
+                showError('This dependency is already added');
+                return;
+            }
+            
+            fetchJSON(`/dependencies/${currentTicketId}/add/${dependencyId}`, {
+                method: 'POST'
+            })
+                .then(response => {
+                    console.log('Dependency added response:', response);
+                    showSuccess('Dependency added successfully');
+                    
+                    // Reload dependencies to update UI
+                    loadTicketDependencies(currentTicketId);
+                    
+                    // Reset the select dropdown
+                    addDependencySelect.value = '';
+                })
+                .catch(error => {
+                    console.error('Failed to add dependency:', error);
+                    showError('Failed to add dependency: ' + error.message);
+                });
+        }
+        
+        function removeDependency(ticketId, dependencyId) {
+            fetchJSON(`/dependencies/${ticketId}/remove/${dependencyId}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    showSuccess('Dependency removed successfully');
+                    loadTicketDependencies(ticketId);
+                })
+                .catch(error => {
+                    showError('Failed to remove dependency: ' + error.message);
+                });
+        }
     });
 </script>
 {% endblock %} 

@@ -5,6 +5,13 @@ from typing import Dict, List, Optional
 from datetime import datetime
 from app import db
 
+# Ticket dependencies association table
+ticket_dependencies = db.Table('ticket_dependencies',
+    db.Column('dependent_id', db.Integer, db.ForeignKey('tickets.id'), primary_key=True),
+    db.Column('dependency_id', db.Integer, db.ForeignKey('tickets.id'), primary_key=True),
+    db.Column('created_date', db.DateTime, default=datetime.utcnow)
+)
+
 class TicketType(db.Model):
     """
     Ticket type model representing the different types a ticket can have.
@@ -105,6 +112,8 @@ class Ticket(db.Model):
         metrics: List of metrics associated with this ticket.
         attachments: List of attachments associated with this ticket.
         comments: List of comments associated with this ticket.
+        dependencies: List of tickets that this ticket depends on.
+        dependents: List of tickets that depend on this ticket.
     """
     __tablename__ = 'tickets'
     
@@ -129,6 +138,16 @@ class Ticket(db.Model):
     # Relationship with comments
     comments = db.relationship('Comment', back_populates='ticket', lazy=True, cascade='all, delete-orphan')
     
+    # Self-referential many-to-many relationship for dependencies
+    dependencies = db.relationship(
+        'Ticket', 
+        secondary=ticket_dependencies,
+        primaryjoin=(ticket_dependencies.c.dependent_id == id),
+        secondaryjoin=(ticket_dependencies.c.dependency_id == id),
+        backref=db.backref('dependents', lazy='dynamic'),
+        lazy='dynamic'
+    )
+    
     def to_dict(self) -> Dict:
         """
         Convert the ticket to a dictionary.
@@ -136,6 +155,18 @@ class Ticket(db.Model):
         Returns:
             Dict: A dictionary representation of the ticket.
         """
+        # Get dependencies and dependents
+        dependencies_list = [{'id': t.id, 'what': t.what, 'state': t.state, 'state_name': t.state_info.name if t.state_info else None} 
+                             for t in self.dependencies]
+        
+        dependents_list = [{'id': t.id, 'what': t.what, 'state': t.state, 'state_name': t.state_info.name if t.state_info else None} 
+                           for t in self.dependents]
+        
+        # Calculate if all dependencies are resolved (completed)
+        all_dependencies_resolved = all(
+            t.state_info and t.state_info.name == 'done' for t in self.dependencies
+        ) if self.dependencies.count() > 0 else True
+        
         return {
             'id': self.id,
             'project_id': self.project_id,
@@ -151,7 +182,10 @@ class Ticket(db.Model):
             'test_steps': self.test_steps,
             'created_date': self.created_date.isoformat() if self.created_date else None,
             'completed_date': self.completed_date.isoformat() if self.completed_date else None,
-            'attachments': [attachment.to_dict() for attachment in self.attachments] if self.attachments else []
+            'attachments': [attachment.to_dict() for attachment in self.attachments] if self.attachments else [],
+            'dependencies': dependencies_list,
+            'dependents': dependents_list,
+            'all_dependencies_resolved': all_dependencies_resolved
         }
     
     @staticmethod
@@ -193,4 +227,55 @@ class Ticket(db.Model):
                 self.completed_date = datetime.utcnow()
         else:
             # Reset completed date if moved away from 'done'
-            self.completed_date = None 
+            self.completed_date = None
+    
+    def add_dependency(self, ticket: 'Ticket') -> None:
+        """
+        Add a dependency to this ticket.
+        
+        Args:
+            ticket: The ticket that this ticket depends on.
+        """
+        if ticket.id != self.id and not self.has_dependency(ticket):
+            self.dependencies.append(ticket)
+    
+    def remove_dependency(self, ticket: 'Ticket') -> None:
+        """
+        Remove a dependency from this ticket.
+        
+        Args:
+            ticket: The ticket to remove as a dependency.
+        """
+        if self.has_dependency(ticket):
+            self.dependencies.remove(ticket)
+    
+    def has_dependency(self, ticket: 'Ticket') -> bool:
+        """
+        Check if this ticket depends on the given ticket.
+        
+        Args:
+            ticket: The ticket to check as a dependency.
+            
+        Returns:
+            bool: True if this ticket depends on the given ticket, False otherwise.
+        """
+        return self.dependencies.filter(Ticket.id == ticket.id).count() > 0
+    
+    def get_all_dependencies_resolved(self) -> bool:
+        """
+        Check if all dependencies of this ticket are resolved (in 'done' state).
+        
+        Returns:
+            bool: True if all dependencies are resolved, False otherwise.
+        """
+        # If there are no dependencies, return True
+        if self.dependencies.count() == 0:
+            return True
+        
+        # Check if all dependencies are resolved
+        for dependency in self.dependencies:
+            state = TicketState.query.get(dependency.state)
+            if not state or state.name != 'done':
+                return False
+        
+        return True 
