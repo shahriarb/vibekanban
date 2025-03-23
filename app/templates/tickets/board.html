@@ -96,6 +96,50 @@
     .ticket-moving {
         animation: ticket-move 0.3s ease;
     }
+    
+    /* Modal styling */
+    .modal-content {
+        max-height: 80vh;
+        overflow-y: auto;
+        width: 100%;
+        padding-right: 10px; /* Add some padding to account for scrollbar */
+    }
+    
+    /* Comments section styling */
+    #comments-list {
+        max-height: 200px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+    
+    /* For Firefox */
+    .modal-content {
+        scrollbar-width: thin;
+        scrollbar-color: #e5e7eb #ffffff;
+    }
+    
+    /* For Chrome, Edge, and Safari */
+    .modal-content::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .modal-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .modal-content::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+    
+    .modal-content::-webkit-scrollbar-thumb:hover {
+        background: #a0a0a0;
+    }
+    
+    #comments-list::-webkit-scrollbar {
+        width: 6px;
+    }
 </style>
 {% endblock %}
 
@@ -155,83 +199,85 @@
 
 <!-- Ticket Modal -->
 <div id="ticket-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6">
-        <div class="flex justify-between items-center mb-4">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg">
+        <div class="flex justify-between items-center p-4 border-b">
             <h2 id="modal-title" class="text-xl font-bold">New Ticket</h2>
             <button class="modal-close text-gray-500 hover:text-gray-700">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         
-        <form id="ticket-form">
-            <input type="hidden" id="ticket-id" value="">
-            <input type="hidden" id="ticket-project-id" value="">
-            
-            <div class="mb-4">
-                <label for="ticket-type" class="block text-gray-700 mb-2">Type</label>
-                <select id="ticket-type" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                    <!-- Ticket types will be loaded here -->
-                    <option value="">Loading types...</option>
-                </select>
-            </div>
-            
-            <div class="mb-4">
-                <label for="ticket-what" class="block text-gray-700 mb-2">What</label>
-                <textarea id="ticket-what" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="2" required></textarea>
-            </div>
-            
-            <div class="mb-4">
-                <label for="ticket-why" class="block text-gray-700 mb-2">Why</label>
-                <textarea id="ticket-why" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="2"></textarea>
-            </div>
-            
-            <div class="mb-6">
-                <label for="ticket-acceptance" class="block text-gray-700 mb-2">Acceptance Criteria</label>
-                <textarea id="ticket-acceptance" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3"></textarea>
-            </div>
-            
-            <div class="mb-4" id="ticket-state-container">
-                <label for="ticket-state" class="block text-gray-700 mb-2">State</label>
-                <select id="ticket-state" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                    <!-- Ticket states will be loaded here -->
-                    <option value="">Loading states...</option>
-                </select>
-            </div>
-            
-            <!-- File attachments section (visible only when editing) -->
-            <div id="attachments-container" class="mb-4 hidden">
-                <label class="block text-gray-700 mb-2">Attachments</label>
-                <div id="attachments-list" class="bg-gray-50 rounded p-2 mb-2">
-                    <p id="no-attachments-message" class="text-gray-500 text-sm">No attachments yet</p>
+        <div class="modal-content">
+            <form id="ticket-form" class="p-6">
+                <input type="hidden" id="ticket-id" value="">
+                <input type="hidden" id="ticket-project-id" value="">
+                
+                <div class="mb-4">
+                    <label for="ticket-type" class="block text-gray-700 mb-2">Type</label>
+                    <select id="ticket-type" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <!-- Ticket types will be loaded here -->
+                        <option value="">Loading types...</option>
+                    </select>
                 </div>
                 
-                <label for="file-upload" class="custom-file-upload">
-                    <i class="fas fa-cloud-upload-alt mr-2"></i> Add Attachment
-                </label>
-                <input id="file-upload" type="file" class="file-input" />
-            </div>
-            
-            <!-- Add this after the attachments container in the ticket modal form -->
-            <div id="comments-container" class="mt-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Comments</label>
-                <div id="comments-list" class="space-y-2 mb-4">
-                    <div id="no-comments-message" class="text-gray-500 italic">No comments yet</div>
+                <div class="mb-4">
+                    <label for="ticket-what" class="block text-gray-700 mb-2">What</label>
+                    <textarea id="ticket-what" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="2" required></textarea>
                 </div>
-                <div class="flex space-x-2">
-                    <textarea id="comment-input" rows="3" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Add a comment..."></textarea>
-                    <button type="button" id="add-comment-btn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Add Comment</button>
+                
+                <div class="mb-4">
+                    <label for="ticket-why" class="block text-gray-700 mb-2">Why</label>
+                    <textarea id="ticket-why" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="2"></textarea>
                 </div>
-            </div>
-            
-            <div class="flex justify-end space-x-3">
-                <button type="button" class="modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
-                    Cancel
-                </button>
-                <button type="submit" id="save-ticket-btn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                    Save Ticket
-                </button>
-            </div>
-        </form>
+                
+                <div class="mb-6">
+                    <label for="ticket-acceptance" class="block text-gray-700 mb-2">Acceptance Criteria</label>
+                    <textarea id="ticket-acceptance" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3"></textarea>
+                </div>
+                
+                <div class="mb-4" id="ticket-state-container">
+                    <label for="ticket-state" class="block text-gray-700 mb-2">State</label>
+                    <select id="ticket-state" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <!-- Ticket states will be loaded here -->
+                        <option value="">Loading states...</option>
+                    </select>
+                </div>
+                
+                <!-- File attachments section (visible only when editing) -->
+                <div id="attachments-container" class="mb-4 hidden">
+                    <label class="block text-gray-700 mb-2">Attachments</label>
+                    <div id="attachments-list" class="bg-gray-50 rounded p-2 mb-2">
+                        <p id="no-attachments-message" class="text-gray-500 text-sm">No attachments yet</p>
+                    </div>
+                    
+                    <label for="file-upload" class="custom-file-upload">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i> Add Attachment
+                    </label>
+                    <input id="file-upload" type="file" class="file-input" />
+                </div>
+                
+                <!-- Add this after the attachments container in the ticket modal form -->
+                <div id="comments-container" class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Comments</label>
+                    <div id="comments-list" class="space-y-2 mb-4 border rounded p-2">
+                        <div id="no-comments-message" class="text-gray-500 italic">No comments yet</div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <textarea id="comment-input" rows="3" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Add a comment..."></textarea>
+                        <button type="button" id="add-comment-btn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Add Comment</button>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" class="modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
+                        Cancel
+                    </button>
+                    <button type="submit" id="save-ticket-btn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                        Save Ticket
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
