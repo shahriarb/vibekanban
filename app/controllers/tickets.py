@@ -127,6 +127,8 @@ def update_ticket(ticket_id: int) -> Union[Dict, Tuple[Dict, int]]:
         ticket.why = data['why']
     if 'acceptance_criteria' in data:
         ticket.acceptance_criteria = data['acceptance_criteria']
+    if 'test_steps' in data:
+        ticket.test_steps = data['test_steps']
     
     # State transition requires special handling
     if 'state' in data and data['state'] != old_state:

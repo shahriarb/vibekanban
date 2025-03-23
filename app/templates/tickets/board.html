@@ -235,6 +235,11 @@
                     <textarea id="ticket-acceptance" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3"></textarea>
                 </div>
                 
+                <div class="mb-6">
+                    <label for="ticket-test-steps" class="block text-gray-700 mb-2">Test Steps</label>
+                    <textarea id="ticket-test-steps" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="Steps to test this functionality..."></textarea>
+                </div>
+                
                 <div class="mb-4" id="ticket-state-container">
                     <label for="ticket-state" class="block text-gray-700 mb-2">State</label>
                     <select id="ticket-state" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
@@ -388,6 +393,7 @@
         const ticketWhat = document.getElementById('ticket-what');
         const ticketWhy = document.getElementById('ticket-why');
         const ticketAcceptance = document.getElementById('ticket-acceptance');
+        const ticketTestSteps = document.getElementById('ticket-test-steps');
         const ticketState = document.getElementById('ticket-state');
         const ticketStateContainer = document.getElementById('ticket-state-container');
         const deleteModal = document.getElementById('delete-modal');
@@ -690,6 +696,10 @@
                 additionalInfo += `<div><span class="font-semibold text-gray-600">Acceptance:</span> ${ticket.acceptance_criteria}</div>`;
             }
             
+            if (ticket.test_steps) {
+                additionalInfo += `<div><span class="font-semibold text-gray-600">Test Steps:</span> ${ticket.test_steps}</div>`;
+            }
+            
             const details = document.createElement('div');
             details.className = 'text-sm text-gray-600 overflow-hidden';
             details.innerHTML = additionalInfo;
@@ -772,6 +782,7 @@
                 ticketWhat.value = ticket.what;
                 ticketWhy.value = ticket.why || '';
                 ticketAcceptance.value = ticket.acceptance_criteria || '';
+                ticketTestSteps.value = ticket.test_steps || '';
                 ticketState.value = ticket.state;
                 ticketStateContainer.classList.remove('hidden');
                 
@@ -834,6 +845,7 @@
                 what: ticketWhat.value,
                 why: ticketWhy.value,
                 acceptance_criteria: ticketAcceptance.value,
+                test_steps: ticketTestSteps.value,
                 state: parseInt(ticketState.value)
             };
             

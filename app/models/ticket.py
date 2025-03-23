@@ -71,6 +71,7 @@ class Ticket(db.Model):
         what: Description of what the ticket is about.
         why: Explanation of why this ticket is important.
         acceptance_criteria: Criteria for considering this ticket done.
+        test_steps: Steps to test this ticket's functionality.
         created_date: The date and time when the ticket was created.
         completed_date: The date and time when the ticket was completed.
         metrics: List of metrics associated with this ticket.
@@ -86,6 +87,7 @@ class Ticket(db.Model):
     what = db.Column(db.Text, nullable=False)
     why = db.Column(db.Text, nullable=True)
     acceptance_criteria = db.Column(db.Text, nullable=True)
+    test_steps = db.Column(db.Text, nullable=True)
     created_date = db.Column(db.DateTime, default=datetime.utcnow)
     completed_date = db.Column(db.DateTime, nullable=True)
     
@@ -115,6 +117,7 @@ class Ticket(db.Model):
             'what': self.what,
             'why': self.why,
             'acceptance_criteria': self.acceptance_criteria,
+            'test_steps': self.test_steps,
             'created_date': self.created_date.isoformat() if self.created_date else None,
             'completed_date': self.completed_date.isoformat() if self.completed_date else None,
             'attachments': [attachment.to_dict() for attachment in self.attachments] if self.attachments else []
@@ -137,7 +140,8 @@ class Ticket(db.Model):
             state=data.get('state'),
             what=data.get('what'),
             why=data.get('why'),
-            acceptance_criteria=data.get('acceptance_criteria')
+            acceptance_criteria=data.get('acceptance_criteria'),
+            test_steps=data.get('test_steps')
         )
     
     def update_state(self, new_state_id: int) -> None:
