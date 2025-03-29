@@ -225,8 +225,10 @@ class Ticket(db.Model):
             # Set the completed date when moved to 'done'
             if not self.completed_date:
                 self.completed_date = datetime.utcnow()
+        # Reset completed date if moved away from 'done'
+        # No special handling needed for 'on hold' state
+        # as it doesn't affect the completed_date
         else:
-            # Reset completed date if moved away from 'done'
             self.completed_date = None
     
     def add_dependency(self, ticket: 'Ticket') -> None:

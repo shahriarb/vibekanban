@@ -22,7 +22,7 @@ def init_db_command():
             db.session.add(ticket_type)
     
     # Insert default ticket states if they don't exist
-    states = ['backlog', 'in progress', 'done']
+    states = ['backlog', 'in progress', 'on hold', 'done']
     for state_name in states:
         if not TicketState.query.filter_by(name=state_name).first():
             ticket_state = TicketState(name=state_name)

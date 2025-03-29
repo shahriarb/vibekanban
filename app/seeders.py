@@ -42,6 +42,7 @@ def seed_data():
             {'name': 'backlog'},
             {'name': 'in progress'},
             {'name': 'review'},
+            {'name': 'on hold'},
             {'name': 'done'}
         ]
         
