@@ -26,13 +26,14 @@ A simple, locally-hosted Kanban board application for personal task management, 
 
 2. Create a virtual environment and activate it:
    ```
-   python -m venv venv
-   source venv/bin/activate   # On Windows, use: venv\Scripts\activate
+   python3 -m venv .venv
+   source .venv/bin/activate   # On Windows, use: .venv\Scripts\activate
    ```
 
 3. Install dependencies:
    ```
    pip install -r requirements.txt
+   pip install flask_migrate httpx fastmcp
    ```
 
 4. Initialize the database:
@@ -40,15 +41,31 @@ A simple, locally-hosted Kanban board application for personal task management, 
    flask init-db
    ```
 
-5. Run the application:
+5. Run the application (two components need to be started):
+   
+   In one terminal:
    ```
-   flask run
+   FLASK_APP=run.py FLASK_DEBUG=1 flask run --port 5050
+   ```
+   
+   In another terminal:
+   ```
+   python kanban_mcp_server.py
+   ```
+   
+   Alternatively, start both components at once:
+   ```
+   python start.py
    ```
 
 6. Open your browser and navigate to:
    ```
-   http://localhost:5000
+   http://localhost:5050
    ```
+
+## Python Version Compatibility
+
+This application has been tested with Python 3.13.2. If you're using conda for Python management, ensure you activate the appropriate environment in your `.zshrc` file, but create a separate venv for this application to avoid dependency conflicts.
 
 ## Cursor MCP Integration
 

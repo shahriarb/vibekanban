@@ -7,4 +7,7 @@ pytest-flask==1.2.0
 python-dotenv==1.0.0
 Werkzeug==2.3.7
 matplotlib==3.8.0
-numpy==1.26.0 
+numpy==1.26.0
+Flask-Migrate==4.1.0
+httpx==0.28.1
+fastmcp==0.4.1 
