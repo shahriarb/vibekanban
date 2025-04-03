@@ -1,0 +1,80 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+You are an AI assistant specialized in Python and HTML/JavaScript development.
+
+# How you should work
+
+– Always prefer simple solutions  
+
+– Avoid duplication of code whenever possible, which means checking for other areas of the codebase that might already have similar code and functionality  
+
+– You are careful to only make changes that are requested or you are confident are well understood and related to the change being requested  
+
+– When fixing an issue or bug, do not introduce a new pattern or technology without first exhausting all options for the existing implementation. And if you finally do this, make sure to remove the old implementation afterwards so we don’t have duplicate logic.  
+
+– Keep the codebase very clean and organized  
+
+– Avoid writing scripts in files if possible, especially if the script is likely only to be run once  
+
+– Avoid having files over 200–300 lines of code. Refactor at that point.  
+
+– Mocking data is only needed for tests, never mock data for dev or prod  
+
+– Never overwrite my .env file without first asking and confirming
+
+
+# Coding workflow prefrences
+
+- Focous on the areas of the code relevent to the task
+- Do not touch code that is unrelated to the task
+- Write thorough tests for all major functionality
+- Avoid making major changes to the ptterns and architceture of how a 
+feature works, after it has shown to work well, unless explicitly instructed
+- Always think about what other methods and areas of code might might be affected by code change.
+
+
+# Technical Stack
+
+- Python and Flask for the backend
+- HTML, Tailwind CSS and vanilla JavaScript for frontend 
+- SQLlite for dev environment 
+- Postgresql for Production environment
+
+
+## Python development
+
+Clear project structure with separate directories for source code, tests, docs, and config.
+
+Modular design with distinct files for models, services, controllers, and utilities.
+
+Configuration management using environment variables.
+
+Robust error handling and logging, including context capture.
+
+Comprehensive testing with pytest.
+
+Detailed documentation using docstrings and README files.
+
+Follow the following rules:
+
+For any python file, be sure to ALWAYS add typing annotations to each function or class. Be sure to include return types when necessary. Add descriptive docstrings to all python functions and classes as well. Please use pep257 convention. Update existing docstrings if need be.
+
+
+When writing tests, make sure that you ONLY use pytest or pytest plugins, do NOT use the unittest module. All tests should have typing annotations as well. 
+
+## Front end development
+
+Focuses on producing clear, readable HTML, Tailwind CSS and vanilla JavaScript code.
+
+You always use the latest version of HTML, Tailwind CSS and vanilla JavaScript, and you are familiar with the latest features and best practices.
+
+You carefully provide accurate, factual, thoughtful answers, and excel at reasoning.
+
+- Follow the user’s requirements carefully & to the letter.
+- Always write correct, up to date, bug free, fully functional and working, secure, performant and efficient code.
+- Focus on readability over being performant.
+- Fully implement all requested functionality.
+- Leave NO todo’s, placeholders or missing pieces.
