@@ -7,7 +7,7 @@ import numpy as np
 from flask import Blueprint, jsonify, request, render_template, current_app
 from app import db
 from app.models.metric import Metric
-from app.models.ticket import Ticket, TicketState
+from app.models.ticket import Ticket, TicketState, TicketType
 from sqlalchemy import func
 
 bp = Blueprint('metrics', __name__, url_prefix='/metrics')
@@ -248,4 +248,75 @@ def get_all_metrics() -> Dict:
         'change_failure_rate': failure_rate_stats,
         'time_to_restore': restore_time_stats,
         'completion_rate': completion_stats
+    })
+
+@bp.route('/update-historical-bug-metrics', methods=['POST'])
+def update_historical_bug_metrics() -> Dict:
+    """
+    Update metrics for historical bug tickets to mark them as failures.
+    
+    This is used to ensure all historical bug tickets that are completed
+    are properly counted in change failure rate and time to restore metrics.
+    
+    Returns:
+        A JSON response with the results of the update operation.
+    """
+    # Get the 'bug' type and 'done' state
+    bug_type = TicketType.query.filter_by(name='bug').first()
+    done_state = TicketState.query.filter_by(name='done').first()
+    
+    if not bug_type or not done_state:
+        return jsonify({
+            'status': 'error',
+            'message': 'Bug type or Done state not found in the system',
+            'updated': 0
+        }), 400
+    
+    # Find all completed bug tickets
+    bug_tickets = Ticket.query.filter_by(
+        type=bug_type.id,
+        state=done_state.id
+    ).all()
+    
+    updated_count = 0
+    
+    for ticket in bug_tickets:
+        # Skip tickets without completion date
+        if not ticket.completed_date:
+            continue
+            
+        # Calculate lead time (restoration time for bugs)
+        lead_time = None
+        if ticket.created_date and ticket.completed_date:
+            lead_time = int((ticket.completed_date - ticket.created_date).total_seconds() / 60)
+        
+        # Check if a metric already exists for this ticket
+        metric = Metric.query.filter_by(ticket_id=ticket.id).first()
+        
+        if metric:
+            # Update existing metric
+            if not metric.change_failure:
+                metric.change_failure = True
+                updated_count += 1
+            
+            if not metric.restoration_time and lead_time:
+                metric.restoration_time = lead_time
+        else:
+            # Create new metric
+            metric = Metric(
+                ticket_id=ticket.id,
+                lead_time=lead_time,
+                change_failure=True,
+                deployment_date=ticket.completed_date,
+                restoration_time=lead_time
+            )
+            db.session.add(metric)
+            updated_count += 1
+    
+    db.session.commit()
+    
+    return jsonify({
+        'status': 'success',
+        'message': f'Updated metrics for {updated_count} historical bug tickets',
+        'updated': updated_count
     }) 

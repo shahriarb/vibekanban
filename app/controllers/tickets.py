@@ -145,11 +145,18 @@ def update_ticket(ticket_id: int) -> Union[Dict, Tuple[Dict, int]]:
             if ticket.created_date and ticket.completed_date:
                 lead_time = int((ticket.completed_date - ticket.created_date).total_seconds() / 60)
                 
+            # Check if this is a bug ticket
+            ticket_type = TicketType.query.get(ticket.type)
+            is_bug = ticket_type and ticket_type.name.lower() == 'bug'
+            
             # Record metrics
             metric = Metric(
                 ticket_id=ticket.id,
                 lead_time=lead_time,
-                deployment_date=datetime.utcnow()
+                change_failure=is_bug,  # Mark as failure if it's a bug
+                deployment_date=datetime.utcnow(),
+                # For bugs, use lead_time as restoration_time since it represents time to fix
+                restoration_time=lead_time if is_bug else None
             )
             db.session.add(metric)
     
