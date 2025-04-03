@@ -71,10 +71,49 @@ This application has been tested with Python 3.13.2. If you're using conda for P
 
 To integrate with Cursor's MCP:
 
-1. Open the Kanban board application
-2. Navigate to Settings
-3. Configure the MCP server settings
-4. In Cursor, add the MCP server with your local application URL
+1. Make sure the application is running
+2. In Cursor, go to Settings > MCP > Add Agent
+
+### Option 1: Run MCP with stdio transport (recommended)
+
+```
+python kanban_mcp_server.py
+```
+
+In Cursor MCP settings:
+- Name: KanbanBoard
+- Type: Command 
+- Command: /full/path/to/.venv/bin/python /full/path/to/kanban_mcp_server.py
+
+For example:
+```
+/Users/shab/Projects/shab/kanban/.venv/bin/python /Users/shab/Projects/shab/kanban/kanban_mcp_server.py
+```
+
+### Option 2: Run MCP with SSE transport (experimental)
+
+If you want to use HTTP/SSE transport instead, modify the last line in kanban_mcp_server.py:
+```python
+# Change this line
+mcp.run(transport='stdio')
+
+# To this
+mcp.settings.port = 8081
+mcp.run(transport='sse')
+```
+
+Then in Cursor MCP settings:
+- Name: KanbanBoard
+- Type: HTTP
+- URL: http://localhost:8081/sse
+
+### Using the KanbanBoard MCP
+
+Once configured, you can use commands like:
+- `@KanbanBoard get kanban status` - View ticket counts by state
+- `@KanbanBoard list projects` - List all projects
+- `@KanbanBoard list tickets` - List all tickets
+- `@KanbanBoard create ticket` - Create a new ticket
 
 ## Testing
 
