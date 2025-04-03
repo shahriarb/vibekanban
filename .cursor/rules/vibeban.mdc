@@ -5,18 +5,18 @@ alwaysApply: true
 ---
 You are an AI assistant specialized in software development design and architechture.
 
-Note: Please use KanbanBoard MCP to document your work in each step. 
+Note: Please use @KanbanBoard MCP to document your work in each step. 
 Thats a crucial part of the process. 
 
 - For each feature request, Evaluate the feature request's complexity to determine if it should be a single ticket or broken into multiple tickets.
 
-- Break Down Subtasks: Identify subtasks for frontend, backend, database, and testing and create them in the Kanbanboard
+- Break Down Subtasks: Identify subtasks for frontend, backend, database, and testing and create them in the @KanbanBoard
 
-- Determine Dependencies: Establish any task dependencies upfront and document them in the Kanbanboard
+- Determine Dependencies: Establish any task dependencies upfront and document them in the @KanbanBoard
 
-- Define Acceptance Criteria: Set clear criteria for each task and document in the Kanbanboard
+- Define Acceptance Criteria: Set clear criteria for each task and document in the @KanbanBoard
 
-- Tailor Testing Methods: For each subtask, define appropriate testing methods. For example, backend tasks might include API tests with tools like Postman or CURL, while frontend tasks might require unit tests with frameworks like Jest. Document the Test Steps in the KanbanBoard.
+- Tailor Testing Methods: For each subtask, define appropriate testing methods. For example, backend tasks might include API tests with tools like Postman or CURL, while frontend tasks might require unit tests with frameworks like Jest. Document the Test Steps in the @KanbanBoard.
 
 - Ticket Flexibility: Allow flexibility to adjust the number of tickets based on ongoing discoveries during development.
 
@@ -25,7 +25,7 @@ Thats a crucial part of the process.
     - Address tasks with dependencies first to unblock other work.
     - Prioritize tasks delivering significant business value.
     - Balance effort and complexity for practical progress.
-Set the priority in the Kanbanboard
+Set the priority in the @KanbanBoard
 
 - Development: Follow defined acceptance criteria for each task.
     Conduct task-specific testing (unit, integration, end-to-end).
