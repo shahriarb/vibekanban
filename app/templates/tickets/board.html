@@ -682,14 +682,11 @@
                 column.className = 'bg-gray-100 rounded-lg p-3 kanban-column';
                 column.dataset.stateId = state.id;
                 
-                // Add click event to the entire column
-                column.addEventListener('click', function(e) {
-                    // Only handle clicks on the column itself or the tickets container
-                    // Don't trigger when clicking on a ticket card or its contents
-                    if (e.target === this || e.target === this.querySelector('.tickets-container')) {
-                        handleColumnClick(this);
-                    }
-                });
+                // Add drop event listeners to the column
+                column.addEventListener('dragover', handleDragOver);
+                column.addEventListener('dragenter', handleDragEnter);
+                column.addEventListener('dragleave', handleDragLeave);
+                column.addEventListener('drop', handleDrop);
                 
                 const header = document.createElement('div');
                 header.className = 'flex justify-between items-center mb-3 pb-1 border-b border-gray-300';
@@ -709,6 +706,12 @@
                 const ticketsContainer = document.createElement('div');
                 ticketsContainer.className = 'tickets-container space-y-2';
                 ticketsContainer.dataset.stateId = state.id;
+                
+                // Add drop event listeners to the tickets container too
+                ticketsContainer.addEventListener('dragover', handleDragOver);
+                ticketsContainer.addEventListener('dragenter', handleDragEnter);
+                ticketsContainer.addEventListener('dragleave', handleDragLeave);
+                ticketsContainer.addEventListener('drop', handleDrop);
                 
                 column.appendChild(header);
                 column.appendChild(ticketsContainer);
@@ -781,7 +784,14 @@
                 }
             }
             
-            // Replace drag events with click event
+            // Make the card draggable
+            card.draggable = true;
+            
+            // Add drag event listeners
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragend', handleDragEnd);
+            
+            // Add click event for editing the ticket (not moving)
             card.addEventListener('click', function(e) {
                 // Don't trigger if clicking on a button or link inside the card
                 if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || 
@@ -789,11 +799,12 @@
                     return;
                 }
                 
-                handleTicketClick(this);
+                // Instead of handling movement, open the ticket for editing
+                openTicketModal(ticket.id);
             });
             
-            // Add visual cue this is clickable
-            card.title = "Click to move this ticket";
+            // Add visual cue this is draggable
+            card.title = "Drag to move this ticket";
             
             const header = document.createElement('div');
             header.className = 'flex justify-between items-start mb-1';
@@ -1163,85 +1174,104 @@
         let selectedTicket = null;
         let selectedColumn = null;
         
-        function handleTicketClick(ticketCard) {
-            // If we have already selected this ticket, deselect it
-            if (selectedTicket === ticketCard) {
-                deselectTicket();
-                return;
-            }
+        function handleDragStart(e) {
+            // Store the dragged ticket
+            draggedTicket = this;
             
-            // If we have a selected column, move this ticket to that column
-            if (selectedColumn) {
-                moveTicketToColumn(ticketCard, selectedColumn);
-                deselectColumn();
-                return;
-            }
+            // Set data transfer
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', this.dataset.id);
             
-            // Deselect any previously selected ticket
-            deselectTicket();
+            // Add styling class
+            setTimeout(() => this.classList.add('dragging'), 0);
             
-            // Select this ticket
-            selectedTicket = ticketCard;
-            ticketCard.classList.add('dragging');
-            
-            // Highlight all columns this ticket can be moved to
-            highlightColumns();
-            
-            // Show user instruction
-            showSuccessMessage("Now click on a column to move the ticket");
+            // Highlight columns this ticket can be moved to
+            highlightDropTargets();
         }
         
-        function handleColumnClick(column) {
-            // If we have a selected ticket, move it to this column
-            if (selectedTicket) {
-                const ticketsContainer = column.querySelector('.tickets-container');
-                moveTicketToColumn(selectedTicket, ticketsContainer);
-                deselectTicket();
-                return;
-            }
+        function handleDragEnd(e) {
+            // Remove styling class
+            this.classList.remove('dragging');
             
-            // If we clicked the same column again, deselect it
-            if (selectedColumn === column) {
-                deselectColumn();
-                return;
-            }
+            // Remove highlights from all columns
+            document.querySelectorAll('.kanban-column').forEach(column => {
+                column.classList.remove('highlight');
+            });
             
-            // Deselect any previously selected column
-            deselectColumn();
-            
-            // Select this column
-            selectedColumn = column;
-            column.classList.add('highlight');
-            
-            // Show user instruction
-            showSuccessMessage("Now click on a ticket to move it here");
+            draggedTicket = null;
         }
         
-        function deselectTicket() {
-            if (selectedTicket) {
-                selectedTicket.classList.remove('dragging');
-                selectedTicket = null;
+        function handleDragOver(e) {
+            // Prevent default to allow drop
+            e.preventDefault();
+            return false;
+        }
+        
+        function handleDragEnter(e) {
+            // Add highlight class
+            if (this.classList.contains('kanban-column') || 
+                this.classList.contains('tickets-container')) {
                 
-                // Remove highlights from all columns
-                document.querySelectorAll('.kanban-column').forEach(column => {
-                    column.classList.remove('highlight');
-                });
+                // Only highlight if this is a different column than the ticket's current one
+                const columnStateId = this.dataset.stateId || this.parentElement.dataset.stateId;
+                if (columnStateId !== draggedTicket.dataset.state) {
+                    (this.classList.contains('kanban-column') ? this : this.parentElement)
+                        .classList.add('highlight');
+                }
             }
         }
         
-        function deselectColumn() {
-            if (selectedColumn) {
-                selectedColumn.classList.remove('highlight');
-                selectedColumn = null;
+        function handleDragLeave(e) {
+            // Remove highlight class
+            if (this.classList.contains('kanban-column')) {
+                this.classList.remove('highlight');
+            } else if (this.classList.contains('tickets-container')) {
+                this.parentElement.classList.remove('highlight');
             }
         }
         
-        function highlightColumns() {
+        function handleDrop(e) {
+            // Prevent default action
+            e.preventDefault();
+            
+            // Get the target column/container
+            let targetContainer;
+            if (this.classList.contains('kanban-column')) {
+                // If dropped on column, use its tickets container
+                targetContainer = this.querySelector('.tickets-container');
+            } else if (this.classList.contains('tickets-container')) {
+                // If dropped directly on tickets container, use it
+                targetContainer = this;
+            } else {
+                // Not a valid drop target
+                return false;
+            }
+            
+            // Get the ticket ID and target state ID
+            const ticketId = parseInt(e.dataTransfer.getData('text/plain'));
+            const newStateId = parseInt(targetContainer.dataset.stateId);
+            const ticketCard = document.querySelector(`.ticket-card[data-id="${ticketId}"]`);
+            const currentStateId = parseInt(ticketCard.dataset.state);
+            
+            // Don't do anything if the ticket is already in this column
+            if (currentStateId === newStateId) {
+                return false;
+            }
+            
+            // Move the ticket
+            moveTicketToColumn(ticketCard, targetContainer);
+            
+            return false;
+        }
+        
+        function highlightDropTargets() {
+            if (!draggedTicket) return;
+            
             document.querySelectorAll('.kanban-column').forEach(column => {
                 const columnStateId = column.dataset.stateId;
                 
                 // Don't highlight the column the ticket is already in
-                if (columnStateId !== selectedTicket.dataset.state) {
+                if (columnStateId !== draggedTicket.dataset.state) {
                     column.classList.add('highlight');
                 }
             });
@@ -1254,7 +1284,6 @@
             
             // Don't do anything if the ticket is already in this column
             if (currentStateId === newStateId) {
-                deselectTicket();
                 return;
             }
             
@@ -1283,6 +1312,7 @@
             
             // Add moving animation
             ticket.classList.add('ticket-moving');
+            
             setTimeout(() => {
                 ticket.classList.remove('ticket-moving');
             }, 300);
