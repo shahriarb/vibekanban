@@ -399,12 +399,12 @@
                 
                 // If response is OK, return text and then try to parse as JSON
                 return response.text().then(text => {
+                    if (!text) return {};
                     try {
-                        console.log(`Success response body:`, text);
                         return JSON.parse(text);
                     } catch (e) {
-                        console.error('Failed to parse JSON:', e);
-                        throw new Error(`Invalid JSON response: ${text.substring(0, 100)}...`);
+                        console.error('Error parsing JSON:', e, text);
+                        throw new Error('Failed to parse server response as JSON');
                     }
                 });
             });
@@ -413,18 +413,23 @@
     // Show error function in case it's missing
     function showError(message) {
         const errorElement = document.getElementById('error-message');
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.classList.remove('hidden');
-            
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                errorElement.classList.add('hidden');
-            }, 5000);
+        errorElement.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
+        errorElement.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+        
+        // Check if this is an HTML error response
+        if (message.includes('<!DOCTYPE html>') || message.includes('<html')) {
+            errorElement.textContent = 'Server responded with an error. Please check the console for details.';
+            console.error('Server HTML error:', message);
         } else {
-            console.error(message);
-            alert(message);
+            errorElement.textContent = message;
         }
+        
+        errorElement.classList.remove('hidden');
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            errorElement.classList.add('hidden');
+        }, 5000);
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -721,6 +726,8 @@
         }
         
         function loadTickets(projectId) {
+            if (!projectId) return;
+            
             console.log(`Loading tickets for project ${projectId}`);
             fetchJSON(`/tickets/?project_id=${projectId}`)
                 .then(tickets => {
@@ -744,15 +751,17 @@
                         });
                         
                         // Add tickets to their respective columns
-                        ticketStates.forEach(state => {
-                            const container = document.querySelector(`.tickets-container[data-state-id="${state.id}"]`);
-                            const counter = document.getElementById(`counter-${state.id}`);
-                            
+                        Object.keys(ticketsByState).forEach(stateId => {
+                            const container = document.querySelector(`.tickets-container[data-state-id="${stateId}"]`);
                             if (container) {
-                                const stateTickets = ticketsByState[state.id] || [];
-                                counter.textContent = stateTickets.length;
+                                // Update counter
+                                const counter = document.querySelector(`#counter-${stateId}`);
+                                if (counter) {
+                                    counter.textContent = ticketsByState[stateId].length;
+                                }
                                 
-                                stateTickets.forEach(ticket => {
+                                // Add ticket cards
+                                ticketsByState[stateId].forEach(ticket => {
                                     container.appendChild(createTicketCard(ticket));
                                 });
                             }
@@ -764,7 +773,7 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Failed to load tickets:', error);
+                    console.error('Error loading tickets:', error);
                     showError('Failed to load tickets: ' + error.message);
                 });
         }
@@ -800,7 +809,7 @@
                 }
                 
                 // Instead of handling movement, open the ticket for editing
-                openTicketModal(ticket.id);
+                openTicketModal(ticket);
             });
             
             // Add visual cue this is draggable
@@ -821,7 +830,7 @@
             editBtn.className = 'text-gray-500 hover:text-gray-700';
             editBtn.innerHTML = '<i class="fas fa-edit"></i>';
             editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // Prevent the card click handler from firing
                 openTicketModal(ticket);
             });
             
@@ -829,7 +838,7 @@
             deleteBtn.className = 'text-gray-500 hover:text-red-700';
             deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
             deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // Prevent the card click handler from firing
                 openDeleteModal(ticket.id);
             });
             
@@ -1381,6 +1390,8 @@
         }
         
         function loadTicketAttachments(ticketId) {
+            if (!ticketId) return;
+            
             fetchJSON(`/attachments/ticket/${ticketId}`)
                 .then(attachments => {
                     currentTicketAttachments = attachments;
@@ -1545,6 +1556,8 @@
         }
         
         function loadTicketComments(ticketId) {
+            if (!ticketId) return;
+            
             // Clear existing comments
             commentsList.innerHTML = '';
             currentTicketComments = [];
@@ -1686,6 +1699,8 @@
 
         // Dependency Management Functions
         function loadProjectTicketsForDependencies(projectId, currentTicketId) {
+            if (!projectId) return;
+            
             fetchJSON(`/tickets/?project_id=${projectId}`)
                 .then(tickets => {
                     // Store all tickets for reference
@@ -1705,6 +1720,7 @@
                     });
                 })
                 .catch(error => {
+                    console.error('Failed to load project tickets:', error);
                     showError('Failed to load project tickets: ' + error.message);
                 });
         }
@@ -1742,17 +1758,15 @@
                     renderDependencies();
                     renderDependents();
                     
-                    // Update dependency status
-                    updateDependencyStatus(data.all_dependencies_resolved);
-                    
-                    // Load tickets for dependency selection
-                    if (currentProjectId) {
-                        loadProjectTicketsForDependencies(currentProjectId, ticketId);
-                    }
+                    // Update dependency status if all dependencies have state = 3 (done)
+                    const allDone = currentTicketDependencies.length === 0 || 
+                                  currentTicketDependencies.every(dep => dep.state == 3);
+                    updateDependencyStatus(allDone);
                 })
                 .catch(error => {
                     console.error('Failed to load dependencies:', error);
                     showError('Failed to load dependencies: ' + error.message);
+                    return Promise.reject(error);
                 });
         }
         
@@ -1879,7 +1893,7 @@
             })
                 .then(response => {
                     console.log('Dependency added response:', response);
-                    showSuccess('Dependency added successfully');
+                    showSuccessMessage('Dependency added successfully');
                     
                     // Reload dependencies to update UI
                     loadTicketDependencies(currentTicketId);
@@ -1898,7 +1912,7 @@
                 method: 'DELETE'
             })
                 .then(response => {
-                    showSuccess('Dependency removed successfully');
+                    showSuccessMessage('Dependency removed successfully');
                     loadTicketDependencies(ticketId);
                 })
                 .catch(error => {
