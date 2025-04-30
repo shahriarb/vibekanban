@@ -79,7 +79,7 @@ def get_tickets_from_db(project_id=None):
         print(f"Error accessing database: {str(e)}", file=sys.stderr)
         return f"Error fetching tickets: {str(e)}"
 
-def create_ticket_in_db(project_id, what, why=None, acceptance_criteria=None, test_steps=None):
+def create_ticket_in_db(project_id, what, why=None, acceptance_criteria=None, test_steps=None, ticket_type=2):
     """Create a new ticket directly in the database."""
     print(f"Creating ticket in database: {what}", file=sys.stderr)
     
@@ -96,7 +96,7 @@ def create_ticket_in_db(project_id, what, why=None, acceptance_criteria=None, te
             why=why,
             acceptance_criteria=acceptance_criteria,
             test_steps=test_steps,
-            type=2,  # Default to 'story'
+            type=ticket_type,  # Use the provided ticket_type parameter
             state=1,  # Default to 'backlog'
         )
         
@@ -214,7 +214,8 @@ async def get_kanban_status() -> str:
 
 @mcp.tool()
 async def create_ticket(project_id: int, what: str, why: str = None, 
-                       acceptance_criteria: str = None, test_steps: str = None) -> str:
+                       acceptance_criteria: str = None, test_steps: str = None,
+                       ticket_type: int = 2) -> str:
     """Create a new ticket in the Kanban board.
 
     Args:
@@ -223,9 +224,10 @@ async def create_ticket(project_id: int, what: str, why: str = None,
         why: Optional explanation of why this ticket is important
         acceptance_criteria: Optional criteria for considering this ticket done
         test_steps: Optional steps to test this ticket
+        ticket_type: Type of ticket (1: bug, 2: story, etc.). Defaults to 2 (story)
     """
     with app_context:
-        return create_ticket_in_db(project_id, what, why, acceptance_criteria, test_steps)
+        return create_ticket_in_db(project_id, what, why, acceptance_criteria, test_steps, ticket_type)
 
 @mcp.tool()
 async def update_ticket_state(ticket_id: int, state: str) -> str:
