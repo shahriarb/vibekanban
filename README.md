@@ -33,7 +33,6 @@ A simple, locally-hosted Kanban board application for personal task management, 
 3. Install dependencies:
    ```
    pip install -r requirements.txt
-   pip install flask_migrate httpx fastmcp
    ```
 
 4. Initialize the database:
