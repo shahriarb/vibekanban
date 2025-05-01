@@ -139,20 +139,6 @@ For each Bug report:
     
 - Move the ticket to 'done' state in the @KanbanBoard when the bug is fixed.
 
-## Project Structure
-
-```
-kanban/
-├── app/
-│   ├── models/         # Database models
-│   ├── controllers/    # Route controllers
-│   ├── services/       # Business logic
-│   ├── templates/      # HTML templates
-│   └── static/         # Static assets (CSS/JS)
-├── requirements.txt    # Python dependencies
-└── README.md          # This file
-```
-
 ## License
 
 MIT
