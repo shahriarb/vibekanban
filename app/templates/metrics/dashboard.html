@@ -249,54 +249,6 @@
             </div>
         </div>
     </div>
-    
-    <!-- Manual Failure Reporting -->
-    <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-        <h3 class="text-lg font-semibold mb-4">Report Deployment Failure</h3>
-        <form id="failure-report-form" class="space-y-4">
-            <div>
-                <label for="ticket-id" class="block text-sm font-medium text-gray-700 mb-1">Ticket ID</label>
-                <input type="number" id="ticket-id" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-            </div>
-            
-            <div>
-                <label for="restoration-time" class="block text-sm font-medium text-gray-700 mb-1">Restoration Time (minutes)</label>
-                <input type="number" id="restoration-time" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-            </div>
-            
-            <div>
-                <label for="deployment-date" class="block text-sm font-medium text-gray-700 mb-1">Deployment Date</label>
-                <input type="datetime-local" id="deployment-date" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <p class="text-xs text-gray-500 mt-1">If not specified, current time will be used</p>
-            </div>
-            
-            <div>
-                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    Report Failure
-                </button>
-            </div>
-        </form>
-        
-        <div id="report-result" class="mt-4 text-center hidden">
-            <p id="report-message" class="text-sm font-semibold"></p>
-        </div>
-    </div>
-    
-    <!-- Update Historical Bug Metrics -->
-    <div class="bg-white rounded-lg shadow-md p-6 mt-6">
-        <h3 class="text-lg font-semibold mb-4">Update Historical Bug Metrics</h3>
-        <p class="text-sm text-gray-600 mb-4">
-            Update metrics for historical bug tickets to ensure they are correctly counted as failures.
-            This is useful after adding new bug tickets or if metrics need to be recalculated.
-        </p>
-        <button id="update-historical-btn" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            Update Historical Bug Metrics
-        </button>
-        
-        <div id="update-result" class="mt-4 text-center hidden">
-            <p id="update-message" class="text-sm font-semibold"></p>
-        </div>
-    </div>
 </div>
 {% endblock %}
 
@@ -453,10 +405,10 @@
             }
             
             // Lead Time:
-            // - Elite: Less than one hour (< 60 minutes)
-            // - High: Less than one day (< 1440 minutes)
-            // - Medium: Less than one week (< 10080 minutes)
-            // - Low: More than one week (>= 10080 minutes)
+            // - Elite: Less than 1 hour (< 60 minutes)
+            // - High: Between 1 hour and 1 day (< 1440 minutes)
+            // - Medium: Between 1 day and 1 week (< 10080 minutes)
+            // - Low: More than 1 week (>= 10080 minutes)
             const leadTimeVal = data.lead_time.median;
             
             if (leadTimeVal < 60) {
@@ -477,8 +429,9 @@
             // - Elite: 0-15%
             // - High: 16-30%
             // - Medium: 31-45%
-            // - Low: 46-60%
+            // - Low: >45%
             const failureRateVal = data.change_failure_rate.failure_rate_percentage;
+            
             if (failureRateVal <= 15) {
                 failureRateIndicator.style.width = '100%';
                 failureRateIndicator.className = 'bg-green-500 h-4 rounded-full';
@@ -494,11 +447,12 @@
             }
             
             // Time to Restore:
-            // - Elite: Less than one hour (< 60 minutes)
-            // - High: Less than one day (< 1440 minutes)
-            // - Medium: Less than one week (< 10080 minutes)
-            // - Low: More than one week (>= 10080 minutes)
+            // - Elite: Less than 1 hour (< 60 minutes)
+            // - High: Less than 1 day (< 1440 minutes)
+            // - Medium: Less than 1 week (< 10080 minutes)
+            // - Low: More than 1 week (>= 10080 minutes)
             const restoreTimeVal = data.time_to_restore.median;
+            
             if (restoreTimeVal < 60) {
                 restoreTimeIndicator.style.width = '100%';
                 restoreTimeIndicator.className = 'bg-green-500 h-4 rounded-full';
@@ -533,80 +487,6 @@
         function showError(message) {
             alert(message);
         }
-        
-        // Handle failure report form submission
-        const failureReportForm = document.getElementById('failure-report-form');
-        const reportResult = document.getElementById('report-result');
-        const reportMessage = document.getElementById('report-message');
-        
-        failureReportForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const ticketId = document.getElementById('ticket-id').value;
-            const restorationTime = document.getElementById('restoration-time').value;
-            const deploymentDate = document.getElementById('deployment-date').value;
-            
-            const data = {
-                ticket_id: parseInt(ticketId),
-                restoration_time: parseInt(restorationTime)
-            };
-            
-            if (deploymentDate) {
-                data.deployment_date = new Date(deploymentDate).toISOString();
-            }
-            
-            reportResult.classList.add('hidden');
-            
-            fetchJSON('/metrics/report-failure', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(result => {
-                reportResult.classList.remove('hidden');
-                reportMessage.textContent = 'Failure reported successfully!';
-                reportMessage.className = 'text-sm font-semibold text-green-600';
-                
-                // Clear the form
-                failureReportForm.reset();
-                
-                // Reload metrics
-                loadMetrics();
-            })
-            .catch(error => {
-                reportResult.classList.remove('hidden');
-                reportMessage.textContent = error.message;
-                reportMessage.className = 'text-sm font-semibold text-red-600';
-            });
-        });
-        
-        // Handle historical metrics update
-        const updateHistoricalBtn = document.getElementById('update-historical-btn');
-        const updateResult = document.getElementById('update-result');
-        const updateMessage = document.getElementById('update-message');
-        
-        updateHistoricalBtn.addEventListener('click', function() {
-            updateResult.classList.add('hidden');
-            
-            fetchJSON('/metrics/update-historical-bug-metrics', {
-                method: 'POST'
-            })
-            .then(result => {
-                updateResult.classList.remove('hidden');
-                updateMessage.textContent = result.message;
-                updateMessage.className = 'text-sm font-semibold text-green-600';
-                
-                // Reload metrics
-                loadMetrics();
-            })
-            .catch(error => {
-                updateResult.classList.remove('hidden');
-                updateMessage.textContent = error.message;
-                updateMessage.className = 'text-sm font-semibold text-red-600';
-            });
-        });
     });
 </script>
 {% endblock %} 
