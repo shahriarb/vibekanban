@@ -20,8 +20,8 @@ A simple, locally-hosted Kanban board application for personal task management, 
 
 1. Clone the repository:
    ```
-   git clone <repository-url>
-   cd kanban
+   git clone https://github.com/shahriarb/vibekanban.git
+   cd vibekanban
    ```
 
 2. Create a virtual environment and activate it:
@@ -45,7 +45,7 @@ A simple, locally-hosted Kanban board application for personal task management, 
    
    In one terminal:
    ```
-   FLASK_APP=run.py FLASK_DEBUG=1 flask run --port 5050
+   python run.py
    ```
       
 
@@ -59,14 +59,14 @@ A simple, locally-hosted Kanban board application for personal task management, 
    {
      "mcpServers": {
        "KanbanBoard": {
-         "command": "/path/to/your/kanban/.venv/bin/python /path/to/your/kanban/kanban_mcp_server.py",
+         "command": "/path/to/your/vibekanban/.venv/bin/python /path/to/your/vibekanban/kanban_mcp_server.py",
          "args": [],
          "enabled": true
        }
      }
    }
    ```
-   Replace `/path/to/your/kanban` with your actual project path.
+   Replace `/path/to/your/vibekanban` with your actual project path.
 
 ## Python Version Compatibility
 
@@ -77,40 +77,14 @@ This application has been tested with Python 3.13.2. If you're using conda for P
 To integrate with Cursor's MCP:
 
 1. Make sure the application is running
-2. In Cursor, go to Settings > MCP > Add Agent
+2. In Cursor, go to Cursor Settings > MCP Servers > Add New Global MCP server
 
-### Option 1: Run MCP with stdio transport (recommended)
-
-```
-python kanban_mcp_server.py
-```
 
 In Cursor MCP settings:
 - Name: KanbanBoard
 - Type: Command 
 - Command: /full/path/to/.venv/bin/python /full/path/to/kanban_mcp_server.py
 
-For example:
-```
-/Users/shab/Projects/shab/kanban/.venv/bin/python /Users/shab/Projects/shab/kanban/kanban_mcp_server.py
-```
-
-### Option 2: Run MCP with SSE transport (experimental)
-
-If you want to use HTTP/SSE transport instead, modify the last line in kanban_mcp_server.py:
-```python
-# Change this line
-mcp.run(transport='stdio')
-
-# To this
-mcp.settings.port = 8081
-mcp.run(transport='sse')
-```
-
-Then in Cursor MCP settings:
-- Name: KanbanBoard
-- Type: HTTP
-- URL: http://localhost:8081/sse
 
 ### Using the KanbanBoard MCP
 
@@ -122,7 +96,7 @@ Once configured, you can use commands like:
 - `@KanbanBoard update ticket state` - Update a ticket's state
 - `@KanbanBoard add comment` - Add a comment to a ticket
 
-### Example Ruleset to use the MCP server in Cursor
+### Example Rules to use the MCP server in Cursor
 
 
 ```
