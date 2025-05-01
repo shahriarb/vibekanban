@@ -5,7 +5,7 @@ A simple, locally-hosted Kanban board application for personal task management, 
 ## Features
 
 - **Project Management**: Create, view, edit, and delete projects
-- **Ticket Management**: Create and manage tickets with types (bug, story, spike)
+- **Ticket Management**: Create and manage tickets with types (bug, story, task, spike) and priorities (low, medium, high, critical)
 - **Kanban Board View**: Visual board with drag-and-drop functionality
 - **MCP Integration**: Integrate with Cursor for automatic ticket creation and updates
 - **DORA Metrics**: Track development performance metrics
@@ -40,6 +40,7 @@ A simple, locally-hosted Kanban board application for personal task management, 
    ```
    flask init-db
    ```
+   Note: Initial data (ticket types, states, and priorities) will be automatically seeded.
 
 5. Run the application (two components need to be started):
    
@@ -47,21 +48,26 @@ A simple, locally-hosted Kanban board application for personal task management, 
    ```
    FLASK_APP=run.py FLASK_DEBUG=1 flask run --port 5050
    ```
-   
-   In another terminal:
-   ```
-   python kanban_mcp_server.py
-   ```
-   
-   Alternatively, start both components at once:
-   ```
-   python start.py
-   ```
+      
 
 6. Open your browser and navigate to:
    ```
    http://localhost:5050
    ```
+
+7. Configure Cursor settings by creating or updating `~/.cursor/mcp.json`:
+   ```json
+   {
+     "mcpServers": {
+       "KanbanBoard": {
+         "command": "/path/to/your/kanban/.venv/bin/python /path/to/your/kanban/kanban_mcp_server.py",
+         "args": [],
+         "enabled": true
+       }
+     }
+   }
+   ```
+   Replace `/path/to/your/kanban` with your actual project path.
 
 ## Python Version Compatibility
 
@@ -113,21 +119,10 @@ Once configured, you can use commands like:
 - `@KanbanBoard get kanban status` - View ticket counts by state
 - `@KanbanBoard list projects` - List all projects
 - `@KanbanBoard list tickets` - List all tickets
-- `@KanbanBoard create ticket` - Create a new ticket
+- `@KanbanBoard create ticket` - Create a new ticket with specified type and priority
+- `@KanbanBoard update ticket state` - Update a ticket's state
+- `@KanbanBoard add comment` - Add a comment to a ticket
 
-## Testing
-
-Run the test suite:
-
-```
-pytest
-```
-
-For end-to-end tests:
-
-```
-pytest tests/e2e
-```
 
 ## Project Structure
 
@@ -139,11 +134,10 @@ kanban/
 │   ├── services/       # Business logic
 │   ├── templates/      # HTML templates
 │   └── static/         # Static assets (CSS/JS)
-├── tests/              # Test suite
 ├── requirements.txt    # Python dependencies
-└── README.md           # This file
+└── README.md          # This file
 ```
 
 ## License
 
-MIT 
+MIT
