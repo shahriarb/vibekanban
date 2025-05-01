@@ -41,17 +41,48 @@ def dashboard() -> str:
 @bp.route('/lead-time', methods=['GET'])
 def get_lead_time() -> Dict:
     """
-    Get lead time metrics.
+    Get lead time metrics based on story tickets.
+    
+    Lead time is calculated as the time between story creation
+    and completion for all completed story tickets.
     
     Returns:
         A JSON response with lead time metrics.
     """
-    # Get all metrics with lead time data
-    metrics = Metric.query.filter(Metric.lead_time.isnot(None)).all()
+    # Get the story type and done state
+    story_type = TicketType.query.filter_by(name='story').first()
+    done_state = TicketState.query.filter_by(name='done').first()
     
-    # Calculate mean, median, p90, min, max
-    if metrics:
-        lead_times = [m.lead_time for m in metrics]
+    if not story_type or not done_state:
+        return jsonify({
+            'mean': 0,
+            'median': 0,
+            'p90': 0,
+            'min': 0,
+            'max': 0,
+            'unit': 'minutes',
+            'sample_size': 0
+        })
+    
+    # Get all completed story tickets
+    story_tickets = Ticket.query.filter_by(
+        type=story_type.id,
+        state=done_state.id
+    ).all()
+    
+    # Calculate lead times
+    lead_times = []
+    for ticket in story_tickets:
+        if ticket.created_date and ticket.completed_date:
+            lead_time = int((ticket.completed_date - ticket.created_date).total_seconds() / 60)
+            lead_times.append(lead_time)
+            if lead_time > 7000:  # Debug log for tickets taking more than 7000 minutes
+                print(f"Long running ticket found - ID: {ticket.id}, Title: {ticket.what}, "
+                      f"Created: {ticket.created_date}, Completed: {ticket.completed_date}, "
+                      f"Lead Time: {lead_time} minutes")
+    
+    # Calculate statistics
+    if lead_times:
         stats = {
             'mean': round(np.mean(lead_times), 2),
             'median': round(np.median(lead_times), 2),
@@ -106,23 +137,35 @@ def get_deployment_frequency() -> Dict:
 @bp.route('/change-failure-rate', methods=['GET'])
 def get_change_failure_rate() -> Dict:
     """
-    Get change failure rate metrics.
+    Get change failure rate metrics based on bug tickets.
+    
+    The change failure rate is calculated as the percentage of bug tickets
+    out of total tickets.
     
     Returns:
         A JSON response with change failure rate metrics.
     """
-    # Get total count of deployments and count of failures
-    total_count = Metric.query.filter(Metric.deployment_date.isnot(None)).count()
-    failure_count = Metric.query.filter(Metric.change_failure == True).count()
+    # Get the bug type
+    bug_type = TicketType.query.filter_by(name='bug').first()
+    if not bug_type:
+        return jsonify({
+            'total_deployments': 0,
+            'failures': 0,
+            'failure_rate_percentage': 0
+        })
+    
+    # Get total count of tickets and count of bug tickets
+    total_count = Ticket.query.count()
+    bug_count = Ticket.query.filter_by(type=bug_type.id).count()
     
     if total_count > 0:
-        failure_rate = round((failure_count / total_count) * 100, 2)
+        failure_rate = round((bug_count / total_count) * 100, 2)
     else:
         failure_rate = 0
     
     stats = {
         'total_deployments': total_count,
-        'failures': failure_count,
+        'failures': bug_count,
         'failure_rate_percentage': failure_rate
     }
     
@@ -131,20 +174,44 @@ def get_change_failure_rate() -> Dict:
 @bp.route('/time-to-restore', methods=['GET'])
 def get_time_to_restore() -> Dict:
     """
-    Get time to restore service metrics.
+    Get time to restore service metrics based on bug fix time.
+    
+    Time to restore is calculated as the time between bug creation
+    and completion for all completed bug tickets.
     
     Returns:
         A JSON response with time to restore service metrics.
     """
-    # Get all metrics with restoration time data
-    metrics = Metric.query.filter(
-        Metric.restoration_time.isnot(None),
-        Metric.change_failure == True
+    # Get the bug type and done state
+    bug_type = TicketType.query.filter_by(name='bug').first()
+    done_state = TicketState.query.filter_by(name='done').first()
+    
+    if not bug_type or not done_state:
+        return jsonify({
+            'mean': 0,
+            'median': 0,
+            'p90': 0,
+            'min': 0,
+            'max': 0,
+            'unit': 'minutes',
+            'sample_size': 0
+        })
+    
+    # Get all completed bug tickets
+    bug_tickets = Ticket.query.filter_by(
+        type=bug_type.id,
+        state=done_state.id
     ).all()
     
-    # Calculate mean, median, p90, min, max
-    if metrics:
-        restore_times = [m.restoration_time for m in metrics]
+    # Calculate restoration times
+    restore_times = []
+    for ticket in bug_tickets:
+        if ticket.created_date and ticket.completed_date:
+            restore_time = int((ticket.completed_date - ticket.created_date).total_seconds() / 60)
+            restore_times.append(restore_time)
+    
+    # Calculate statistics
+    if restore_times:
         stats = {
             'mean': round(np.mean(restore_times), 2),
             'median': round(np.median(restore_times), 2),
@@ -319,4 +386,53 @@ def update_historical_bug_metrics() -> Dict:
         'status': 'success',
         'message': f'Updated metrics for {updated_count} historical bug tickets',
         'updated': updated_count
-    }) 
+    })
+
+@bp.route('/longest-story', methods=['GET'])
+def get_longest_story() -> Dict:
+    """
+    Find the story ticket that took the longest time to complete.
+    
+    Returns:
+        A JSON response with the ticket details and completion time.
+    """
+    # Get the story type and done state
+    story_type = TicketType.query.filter_by(name='story').first()
+    done_state = TicketState.query.filter_by(name='done').first()
+    
+    if not story_type or not done_state:
+        return jsonify({
+            'error': 'Story type or Done state not found'
+        }), 404
+    
+    # Get all completed story tickets
+    story_tickets = Ticket.query.filter_by(
+        type=story_type.id,
+        state=done_state.id
+    ).all()
+    
+    # Find the ticket with the longest lead time
+    longest_time = 0
+    longest_ticket = None
+    
+    for ticket in story_tickets:
+        if ticket.created_date and ticket.completed_date:
+            lead_time = int((ticket.completed_date - ticket.created_date).total_seconds() / 60)
+            if lead_time > longest_time:
+                longest_time = lead_time
+                longest_ticket = ticket
+    
+    if longest_ticket:
+        return jsonify({
+            'ticket_id': longest_ticket.id,
+            'what': longest_ticket.what,
+            'why': longest_ticket.why,
+            'created_date': longest_ticket.created_date.isoformat(),
+            'completed_date': longest_ticket.completed_date.isoformat(),
+            'lead_time_minutes': longest_time,
+            'lead_time_days': round(longest_time / (24 * 60), 2)
+        })
+    else:
+        return jsonify({
+            'error': 'No completed story tickets found'
+        }), 404 
