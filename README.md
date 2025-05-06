@@ -35,11 +35,20 @@ A simple, locally-hosted Kanban board application for personal task management, 
    pip install -r requirements.txt
    ```
 
-4. Initialize the database:
+4. Initialize the database and migrations:
+
+   If this is your first time setting up the project, run:
    ```
    flask db init
+   flask db migrate -m "Initial migration"
+   flask db upgrade
    ```
-   Note: Initial data (ticket types, states, and priorities) will be automatically seeded.
+   This will create the database tables based on the current models.
+
+   If you already have a `migrations/` folder, you only need to run:
+   ```
+   flask db upgrade
+   ```
 
 5. Run the application (two components need to be started):
    
