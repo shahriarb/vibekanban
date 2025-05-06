@@ -37,7 +37,7 @@ A simple, locally-hosted Kanban board application for personal task management, 
 
 4. Initialize the database:
    ```
-   flask init-db
+   flask db init
    ```
    Note: Initial data (ticket types, states, and priorities) will be automatically seeded.
 
