@@ -105,35 +105,6 @@ def get_lead_time() -> Dict:
     
     return jsonify(stats)
 
-@bp.route('/deployment-frequency', methods=['GET'])
-def get_deployment_frequency() -> Dict:
-    """
-    Get deployment frequency metrics.
-    
-    Returns:
-        A JSON response with deployment frequency metrics.
-    """
-    # Get count of deployments in the last day, week, and month
-    now = datetime.utcnow()
-    day_ago = now - timedelta(days=1)
-    week_ago = now - timedelta(days=7)
-    month_ago = now - timedelta(days=30)
-    
-    daily_count = Metric.query.filter(Metric.deployment_date >= day_ago).count()
-    weekly_count = Metric.query.filter(Metric.deployment_date >= week_ago).count()
-    monthly_count = Metric.query.filter(Metric.deployment_date >= month_ago).count()
-    
-    stats = {
-        'daily': daily_count,
-        'weekly': weekly_count,
-        'monthly': monthly_count,
-        'daily_avg': round(daily_count / 1, 2),
-        'weekly_avg': round(weekly_count / 7, 2),
-        'monthly_avg': round(monthly_count / 30, 2)
-    }
-    
-    return jsonify(stats)
-
 @bp.route('/change-failure-rate', methods=['GET'])
 def get_change_failure_rate() -> Dict:
     """
@@ -285,7 +256,6 @@ def get_all_metrics() -> Dict:
         A JSON response with comprehensive metrics data.
     """
     lead_time_stats = get_lead_time().get_json()
-    deployment_freq_stats = get_deployment_frequency().get_json()
     failure_rate_stats = get_change_failure_rate().get_json()
     restore_time_stats = get_time_to_restore().get_json()
     
@@ -311,7 +281,6 @@ def get_all_metrics() -> Dict:
     
     return jsonify({
         'lead_time': lead_time_stats,
-        'deployment_frequency': deployment_freq_stats,
         'change_failure_rate': failure_rate_stats,
         'time_to_restore': restore_time_stats,
         'completion_rate': completion_stats

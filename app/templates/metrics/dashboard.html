@@ -19,15 +19,6 @@
     <!-- Metrics Overview -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div class="bg-white rounded-lg shadow-md p-4">
-            <h3 class="text-lg font-semibold text-indigo-700 mb-2">Deployment Frequency</h3>
-            <p class="text-gray-600 text-sm mb-2">How often you deploy to production</p>
-            <div class="text-gray-800">
-                <p id="deployment-daily" class="text-3xl font-bold mb-1">-</p>
-                <p class="text-sm text-gray-500">deployments per day</p>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-lg shadow-md p-4">
             <h3 class="text-lg font-semibold text-indigo-700 mb-2">Lead Time</h3>
             <p class="text-gray-600 text-sm mb-2">Time from code to deployment</p>
             <div class="text-gray-800">
@@ -35,7 +26,6 @@
                 <p class="text-sm text-gray-500">minutes (median)</p>
             </div>
         </div>
-        
         <div class="bg-white rounded-lg shadow-md p-4">
             <h3 class="text-lg font-semibold text-indigo-700 mb-2">Change Failure Rate</h3>
             <p class="text-gray-600 text-sm mb-2">How often changes cause failures</p>
@@ -44,7 +34,6 @@
                 <p class="text-sm text-gray-500">failure percentage</p>
             </div>
         </div>
-        
         <div class="bg-white rounded-lg shadow-md p-4">
             <h3 class="text-lg font-semibold text-indigo-700 mb-2">Time to Restore</h3>
             <p class="text-gray-600 text-sm mb-2">Recovery time after failure</p>
@@ -57,54 +46,6 @@
     
     <!-- Detailed Metrics -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <!-- Deployment Frequency -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold mb-4">Deployment Frequency</h3>
-            
-            <div class="mb-6">
-                <div class="grid grid-cols-3 gap-4 mb-2">
-                    <div class="text-center">
-                        <p class="text-2xl font-bold" id="daily-deploy-count">-</p>
-                        <p class="text-sm text-gray-500">Daily</p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-2xl font-bold" id="weekly-deploy-count">-</p>
-                        <p class="text-sm text-gray-500">Weekly</p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-2xl font-bold" id="monthly-deploy-count">-</p>
-                        <p class="text-sm text-gray-500">Monthly</p>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="text-center">
-                        <p class="text-lg font-semibold" id="daily-deploy-avg">-</p>
-                        <p class="text-xs text-gray-500">per day</p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-lg font-semibold" id="weekly-deploy-avg">-</p>
-                        <p class="text-xs text-gray-500">per day</p>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-lg font-semibold" id="monthly-deploy-avg">-</p>
-                        <p class="text-xs text-gray-500">per day</p>
-                    </div>
-                </div>
-            </div>
-            
-            <h4 class="text-sm font-semibold text-gray-500 mb-2">DORA Performance</h4>
-            <div class="bg-gray-100 rounded-full h-4 mb-2">
-                <div id="deploy-freq-indicator" class="bg-green-500 h-4 rounded-full" style="width: 75%"></div>
-            </div>
-            <div class="flex justify-between text-xs text-gray-500">
-                <span>Low</span>
-                <span>Medium</span>
-                <span>High</span>
-                <span>Elite</span>
-            </div>
-        </div>
-        
         <!-- Lead Time -->
         <div class="bg-white rounded-lg shadow-md p-6">
             <h3 class="text-lg font-semibold mb-4">Lead Time for Changes</h3>
@@ -131,17 +72,6 @@
                     <p class="text-xs text-gray-500">minutes</p>
                 </div>
             </div>
-            
-            <h4 class="text-sm font-semibold text-gray-500 mb-2">DORA Performance</h4>
-            <div class="bg-gray-100 rounded-full h-4 mb-2">
-                <div id="lead-time-indicator" class="bg-yellow-500 h-4 rounded-full" style="width: 50%"></div>
-            </div>
-            <div class="flex justify-between text-xs text-gray-500">
-                <span>Low</span>
-                <span>Medium</span>
-                <span>High</span>
-                <span>Elite</span>
-            </div>
         </div>
         
         <!-- Change Failure Rate -->
@@ -166,17 +96,6 @@
                         <p class="text-xs text-gray-500">Failures</p>
                     </div>
                 </div>
-            </div>
-            
-            <h4 class="text-sm font-semibold text-gray-500 mb-2">DORA Performance</h4>
-            <div class="bg-gray-100 rounded-full h-4 mb-2">
-                <div id="failure-rate-indicator" class="bg-green-500 h-4 rounded-full" style="width: 75%"></div>
-            </div>
-            <div class="flex justify-between text-xs text-gray-500">
-                <span>Low</span>
-                <span>Medium</span>
-                <span>High</span>
-                <span>Elite</span>
             </div>
         </div>
         
@@ -205,17 +124,6 @@
                     <p class="text-lg font-semibold" id="restore-time-max">-</p>
                     <p class="text-xs text-gray-500">minutes</p>
                 </div>
-            </div>
-            
-            <h4 class="text-sm font-semibold text-gray-500 mb-2">DORA Performance</h4>
-            <div class="bg-gray-100 rounded-full h-4 mb-2">
-                <div id="restore-time-indicator" class="bg-green-500 h-4 rounded-full" style="width: 75%"></div>
-            </div>
-            <div class="flex justify-between text-xs text-gray-500">
-                <span>Low</span>
-                <span>Medium</span>
-                <span>High</span>
-                <span>Elite</span>
             </div>
         </div>
     </div>
@@ -256,39 +164,26 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // DOM elements for summary metrics
-        const deploymentDaily = document.getElementById('deployment-daily');
         const leadTime = document.getElementById('lead-time');
         const failureRate = document.getElementById('failure-rate');
         const restoreTime = document.getElementById('restore-time');
-        
-        // DOM elements for deployment frequency
-        const dailyDeployCount = document.getElementById('daily-deploy-count');
-        const weeklyDeployCount = document.getElementById('weekly-deploy-count');
-        const monthlyDeployCount = document.getElementById('monthly-deploy-count');
-        const dailyDeployAvg = document.getElementById('daily-deploy-avg');
-        const weeklyDeployAvg = document.getElementById('weekly-deploy-avg');
-        const monthlyDeployAvg = document.getElementById('monthly-deploy-avg');
-        const deployFreqIndicator = document.getElementById('deploy-freq-indicator');
         
         // DOM elements for lead time
         const leadTimeMedian = document.getElementById('lead-time-median');
         const leadTimeP90 = document.getElementById('lead-time-p90');
         const leadTimeMin = document.getElementById('lead-time-min');
         const leadTimeMax = document.getElementById('lead-time-max');
-        const leadTimeIndicator = document.getElementById('lead-time-indicator');
         
         // DOM elements for change failure rate
         const failureRatePercent = document.getElementById('failure-rate-percent');
         const totalDeployments = document.getElementById('total-deployments');
         const totalFailures = document.getElementById('total-failures');
-        const failureRateIndicator = document.getElementById('failure-rate-indicator');
         
         // DOM elements for time to restore
         const restoreTimeMedian = document.getElementById('restore-time-median');
         const restoreTimeP90 = document.getElementById('restore-time-p90');
         const restoreTimeMin = document.getElementById('restore-time-min');
         const restoreTimeMax = document.getElementById('restore-time-max');
-        const restoreTimeIndicator = document.getElementById('restore-time-indicator');
         
         // DOM elements for ticket completion
         const completionRate = document.getElementById('completion-rate');
@@ -310,29 +205,14 @@
         function loadMetrics() {
             fetchJSON('/metrics/')
                 .then(data => {
-                    updateDeploymentFrequency(data.deployment_frequency);
                     updateLeadTime(data.lead_time);
                     updateChangeFailureRate(data.change_failure_rate);
                     updateTimeToRestore(data.time_to_restore);
                     updateCompletionRate(data.completion_rate);
-                    updateDoraPerformance(data);
                 })
                 .catch(error => {
                     showError('Failed to load metrics: ' + error.message);
                 });
-        }
-        
-        function updateDeploymentFrequency(data) {
-            // Update summary
-            deploymentDaily.textContent = data.daily_avg;
-            
-            // Update details
-            dailyDeployCount.textContent = data.daily;
-            weeklyDeployCount.textContent = data.weekly;
-            monthlyDeployCount.textContent = data.monthly;
-            dailyDeployAvg.textContent = data.daily_avg;
-            weeklyDeployAvg.textContent = data.weekly_avg;
-            monthlyDeployAvg.textContent = data.monthly_avg;
         }
         
         function updateLeadTime(data) {
@@ -380,92 +260,6 @@
             
             // Update progress bar
             completionProgress.style.width = rate + '%';
-        }
-        
-        function updateDoraPerformance(data) {
-            // Deployment Frequency:
-            // - Elite: Multiple per day (>= 1 per day)
-            // - High: Between once per day and once per week (>= 0.14 per day)
-            // - Medium: Between once per week and once per month (>= 0.03 per day)
-            // - Low: Less than once per month (< 0.03 per day)
-            const deployFreqVal = data.deployment_frequency.daily_avg;
-            
-            if (deployFreqVal >= 1) {
-                deployFreqIndicator.style.width = '100%';
-                deployFreqIndicator.className = 'bg-green-500 h-4 rounded-full';
-            } else if (deployFreqVal >= 0.14) {
-                deployFreqIndicator.style.width = '75%';
-                deployFreqIndicator.className = 'bg-green-500 h-4 rounded-full';
-            } else if (deployFreqVal >= 0.03) {
-                deployFreqIndicator.style.width = '50%';
-                deployFreqIndicator.className = 'bg-yellow-500 h-4 rounded-full';
-            } else {
-                deployFreqIndicator.style.width = '25%';
-                deployFreqIndicator.className = 'bg-red-500 h-4 rounded-full';
-            }
-            
-            // Lead Time:
-            // - Elite: Less than 1 hour (< 60 minutes)
-            // - High: Between 1 hour and 1 day (< 1440 minutes)
-            // - Medium: Between 1 day and 1 week (< 10080 minutes)
-            // - Low: More than 1 week (>= 10080 minutes)
-            const leadTimeVal = data.lead_time.median;
-            
-            if (leadTimeVal < 60) {
-                leadTimeIndicator.style.width = '100%';
-                leadTimeIndicator.className = 'bg-green-500 h-4 rounded-full';
-            } else if (leadTimeVal < 1440) {
-                leadTimeIndicator.style.width = '75%';
-                leadTimeIndicator.className = 'bg-green-500 h-4 rounded-full';
-            } else if (leadTimeVal < 10080) {
-                leadTimeIndicator.style.width = '50%';
-                leadTimeIndicator.className = 'bg-yellow-500 h-4 rounded-full';
-            } else {
-                leadTimeIndicator.style.width = '25%';
-                leadTimeIndicator.className = 'bg-red-500 h-4 rounded-full';
-            }
-            
-            // Change Failure Rate:
-            // - Elite: 0-15%
-            // - High: 16-30%
-            // - Medium: 31-45%
-            // - Low: >45%
-            const failureRateVal = data.change_failure_rate.failure_rate_percentage;
-            
-            if (failureRateVal <= 15) {
-                failureRateIndicator.style.width = '100%';
-                failureRateIndicator.className = 'bg-green-500 h-4 rounded-full';
-            } else if (failureRateVal <= 30) {
-                failureRateIndicator.style.width = '75%';
-                failureRateIndicator.className = 'bg-green-500 h-4 rounded-full';
-            } else if (failureRateVal <= 45) {
-                failureRateIndicator.style.width = '50%';
-                failureRateIndicator.className = 'bg-yellow-500 h-4 rounded-full';
-            } else {
-                failureRateIndicator.style.width = '25%';
-                failureRateIndicator.className = 'bg-red-500 h-4 rounded-full';
-            }
-            
-            // Time to Restore:
-            // - Elite: Less than 1 hour (< 60 minutes)
-            // - High: Less than 1 day (< 1440 minutes)
-            // - Medium: Less than 1 week (< 10080 minutes)
-            // - Low: More than 1 week (>= 10080 minutes)
-            const restoreTimeVal = data.time_to_restore.median;
-            
-            if (restoreTimeVal < 60) {
-                restoreTimeIndicator.style.width = '100%';
-                restoreTimeIndicator.className = 'bg-green-500 h-4 rounded-full';
-            } else if (restoreTimeVal < 1440) {
-                restoreTimeIndicator.style.width = '75%';
-                restoreTimeIndicator.className = 'bg-green-500 h-4 rounded-full';
-            } else if (restoreTimeVal < 10080) {
-                restoreTimeIndicator.style.width = '50%';
-                restoreTimeIndicator.className = 'bg-yellow-500 h-4 rounded-full';
-            } else {
-                restoreTimeIndicator.style.width = '25%';
-                restoreTimeIndicator.className = 'bg-red-500 h-4 rounded-full';
-            }
         }
         
         // Helpers
