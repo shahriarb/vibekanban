@@ -29,6 +29,9 @@ instance/
 *.sqlite3
 *.db
 
+migrations/
+instance/kanban.sqlite
+
 # Virtual Environment
 venv/
 env/
