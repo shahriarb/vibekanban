@@ -514,7 +514,10 @@
                 loadTicketPriorities(),
                 loadProject(parsedProjectId),
                 loadTickets(parsedProjectId)
-            ]).catch(error => {
+            ]).then(() => {
+                // Enable the New Ticket button after all data is loaded
+                newTicketBtn.removeAttribute('disabled');
+            }).catch(error => {
                 showError('Failed to load board data: ' + error.message);
             });
         } else {
