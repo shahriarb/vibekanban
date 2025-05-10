@@ -1,6 +1,23 @@
-# Kanban Board Application
+# VibeKanban 🚦🤖
 
-A simple, locally-hosted Kanban board with an MCP server for Agent task management.
+**Bring clarity to your agent-powered coding!**
+
+Welcome to VibeKanban — a simple, modern Kanban board that's not just for you, but for your AI agents too! 
+
+✨ **Track your work. Give your agent context. See what's happening, every step of the way.**
+
+---
+
+## Why VibeKanban? 🤔
+
+Ever wondered what your agent is actually doing when you ask it to fix a bug or build a feature? VibeKanban bridges the gap between human workflow and agent automation:
+
+- 📝 **Visual Kanban Board** — Organize your projects and tickets with a clean, drag-and-drop interface.
+- 🤖 **Agent Integration (MCP Server)** — Let your AI agent create, update, and follow tickets, just like a real teammate.
+- 📊 **Metrics & Insights** — Track deployment rates, bug frequency, and more to see how you (and your agent) are vibing.
+- ⚡ **Instant Setup** — One script and you're ready to go!
+
+---
 
 ## Features
 
