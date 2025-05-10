@@ -2,6 +2,7 @@ from typing import Dict, List, Any, Optional
 import sys
 import os
 from mcp.server.fastmcp import FastMCP
+import difflib
 
 # Import database models and setup
 from app import create_app, db
@@ -204,6 +205,51 @@ def get_kanban_status_from_db():
     except Exception as e:
         print(f"Error getting Kanban status: {str(e)}", file=sys.stderr)
         return f"Error getting Kanban status: {str(e)}"
+
+def get_project_id_by_name_fuzzy(name: str) -> Optional[int]:
+    """
+    Find a project ID by fuzzy-matching the provided name against all project names.
+    Matching is case-insensitive and typo-tolerant (using difflib).
+
+    Args:
+        name (str): The project name or partial name to search for.
+
+    Returns:
+        Optional[int]: The ID of the best-matching project, or None if no match is found.
+    """
+    try:
+        projects = Project.query.all()
+        if not projects:
+            return None
+        project_names = [project.name for project in projects]
+        # Use difflib to find the closest match (case-insensitive)
+        matches = difflib.get_close_matches(name.lower(), [n.lower() for n in project_names], n=1, cutoff=0.6)
+        if matches:
+            # Find the original project with the matched name (case-insensitive)
+            for project in projects:
+                if project.name.lower() == matches[0]:
+                    return project.id
+        return None
+    except Exception as e:
+        print(f"Error in fuzzy project name lookup: {str(e)}", file=sys.stderr)
+        return None
+
+@mcp.tool()
+async def get_project_id_by_name(name: str) -> Optional[int]:
+    """
+    Look up a project ID by project name using fuzzy, case-insensitive, and typo-tolerant matching.
+
+    Args:
+        name (str): The project name or partial name to search for. The search is not case-sensitive and will tolerate minor typos or similar words.
+
+    Returns:
+        int or None: The ID of the best-matching project, or None if no suitable match is found.
+
+    Usage:
+        Use this tool when you have a project name (even if not exact) and need to retrieve its project ID for further operations. This is especially useful for agents or users who may not know the exact spelling or case of the project name.
+    """
+    with app_context:
+        return get_project_id_by_name_fuzzy(name)
 
 # MCP Tool Implementations
 @mcp.tool()
