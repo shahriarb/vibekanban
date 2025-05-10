@@ -1,6 +1,6 @@
 # Kanban Board Application
 
-A simple, locally-hosted Kanban board application for personal task management, with Cursor MCP integration.
+A simple, locally-hosted Kanban board with an MCP server for Agent task management.
 
 ## Features
 
