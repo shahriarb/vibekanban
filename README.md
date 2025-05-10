@@ -16,7 +16,33 @@ A simple, locally-hosted Kanban board application for personal task management, 
 - **Frontend**: HTML, JavaScript, and Tailwind CSS
 - **Database**: SQLite (local)
 
-## Setup Instructions
+## Quick Setup (Recommended)
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/shahriarb/vibekanban.git
+   cd vibekanban
+   ```
+
+2. Run the setup script:
+   ```
+   ./setup.sh
+   ```
+   This script will create a virtual environment, install dependencies, and set up the database.
+
+3. Start the application:
+   ```
+   ./run.sh
+   ```
+
+4. Open your browser and navigate to:
+   ```
+   http://localhost:5050
+   ```
+
+## Manual Setup
+
+If you prefer to set up manually or are experiencing issues with the scripts:
 
 1. Clone the repository:
    ```
@@ -50,32 +76,10 @@ A simple, locally-hosted Kanban board application for personal task management, 
    flask db upgrade
    ```
 
-5. Run the application (two components need to be started):
-   
-   In one terminal:
+5. Run the application manually:
    ```
    python run.py
    ```
-      
-
-6. Open your browser and navigate to:
-   ```
-   http://localhost:5050
-   ```
-
-7. Configure Cursor settings by creating or updating `~/.cursor/mcp.json`:
-   ```json
-   {
-     "mcpServers": {
-       "KanbanBoard": {
-         "command": "/path/to/your/vibekanban/.venv/bin/python /path/to/your/vibekanban/kanban_mcp_server.py",
-         "args": [],
-         "enabled": true
-       }
-     }
-   }
-   ```
-   Replace `/path/to/your/vibekanban` with your actual project path.
 
 ## Python Version Compatibility
 
@@ -147,6 +151,7 @@ For each Bug report:
 - Move the ticket to 'in progress' state in the @KanbanBoard and start fixing the bug based on defined criteria.
     
 - Move the ticket to 'done' state in the @KanbanBoard when the bug is fixed.
+```
 
 ## License
 
