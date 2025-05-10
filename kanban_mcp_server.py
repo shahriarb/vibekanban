@@ -208,7 +208,15 @@ def get_kanban_status_from_db():
 # MCP Tool Implementations
 @mcp.tool()
 async def get_kanban_status() -> str:
-    """Get the current status of the Kanban board, including ticket counts by state."""
+    """
+    Get the current status of the Kanban board, including ticket counts by state and project.
+
+    Returns:
+        str: A formatted string summarizing the total number of tickets, ticket counts by state (backlog, in progress, done, on hold), and a breakdown of tickets per project.
+
+    Usage:
+        Use this tool to get a high-level overview of the Kanban board's current state, which is useful for reporting, dashboards, or monitoring progress across all projects.
+    """
     with app_context:
         return get_kanban_status_from_db()
 
@@ -216,54 +224,90 @@ async def get_kanban_status() -> str:
 async def create_ticket(project_id: int, what: str, why: str = None, 
                        acceptance_criteria: str = None, test_steps: str = None,
                        ticket_type: int = 2) -> str:
-    """Create a new ticket in the Kanban board.
+    """
+    Create a new ticket in the Kanban board.
 
     Args:
-        project_id: The ID of the project this ticket belongs to
-        what: Description of what needs to be done
-        why: Optional explanation of why this ticket is important
-        acceptance_criteria: Optional criteria for considering this ticket done
-        test_steps: Optional steps to test this ticket
-        ticket_type: Type of ticket (1: bug, 2: story, etc.). Defaults to 2 (story)
+        project_id (int): The ID of the project this ticket belongs to.
+        what (str): Description of what needs to be done (ticket summary).
+        why (str, optional): Explanation of why this ticket is important.
+        acceptance_criteria (str, optional): Criteria for considering this ticket done.
+        test_steps (str, optional): Steps to test this ticket.
+        ticket_type (int, optional): Type of ticket (1: bug, 2: story, etc.). Defaults to 2 (story).
+
+    Returns:
+        str: A confirmation message with the new ticket's ID and summary, or an error message if creation fails.
+
+    Usage:
+        Use this tool to add new work items, bugs, or stories to a project. Provide as much detail as possible for clarity and traceability. The ticket will be created in the 'backlog' state by default.
     """
     with app_context:
         return create_ticket_in_db(project_id, what, why, acceptance_criteria, test_steps, ticket_type)
 
 @mcp.tool()
 async def update_ticket_state(ticket_id: int, state: str) -> str:
-    """Update a ticket's state in the Kanban board.
+    """
+    Update a ticket's state in the Kanban board.
 
     Args:
-        ticket_id: The ID of the ticket to update
-        state: The new state name (e.g., 'backlog', 'in progress', 'done')
+        ticket_id (int): The ID of the ticket to update.
+        state (str): The new state name (e.g., 'backlog', 'in progress', 'done', 'on hold').
+
+    Returns:
+        str: A confirmation message if the update is successful, or an error message if the ticket or state is invalid.
+
+    Usage:
+        Use this tool to move a ticket between workflow states. This is essential for tracking progress and managing work in the Kanban process.
     """
     with app_context:
         return update_ticket_state_in_db(ticket_id, state)
 
 @mcp.tool()
 async def list_projects() -> str:
-    """List all projects in the Kanban board."""
+    """
+    List all projects in the Kanban board.
+
+    Returns:
+        str: A formatted list of all projects, including their IDs, names, descriptions, and ticket counts.
+
+    Usage:
+        Use this tool to discover available projects and their basic information. Useful for selecting a project before creating or listing tickets.
+    """
     print("list_projects tool called", file=sys.stderr)
     with app_context:
         return get_projects_from_db()
 
 @mcp.tool()
 async def list_tickets(project_id: Optional[int] = None) -> str:
-    """List tickets, optionally filtered by project.
+    """
+    List tickets, optionally filtered by project.
 
     Args:
-        project_id: Optional ID of the project to filter tickets by
+        project_id (int, optional): The ID of the project to filter tickets by. If not provided, lists all tickets across all projects.
+
+    Returns:
+        str: A formatted list of tickets, including their IDs, summaries, states, and types. If filtered by project, only tickets for that project are shown.
+
+    Usage:
+        Use this tool to review the current work items, bugs, or stories in a project or across all projects. Helpful for planning, triage, or reporting.
     """
     with app_context:
         return get_tickets_from_db(project_id)
 
 @mcp.tool()
 async def add_comment(ticket_id: int, content: str) -> str:
-    """Add a comment to a ticket.
+    """
+    Add a comment to a ticket.
 
     Args:
-        ticket_id: The ID of the ticket to comment on
-        content: The comment text
+        ticket_id (int): The ID of the ticket to comment on.
+        content (str): The comment text to add.
+
+    Returns:
+        str: A confirmation message if the comment is added successfully, or an error message if the ticket is not found.
+
+    Usage:
+        Use this tool to add clarifications, updates, or discussion to a ticket. Comments are useful for collaboration and documenting decisions or progress.
     """
     with app_context:
         return add_comment_to_db(ticket_id, content)
