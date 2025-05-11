@@ -132,6 +132,7 @@ Example `mcp.json`:
 
 Once configured, you can use commands like:
 - `@KanbanBoard get kanban status` - View ticket counts by state
+- `@KanbanBoard get project ID by name` - Look up a project ID by project name
 - `@KanbanBoard list projects` - List all projects
 - `@KanbanBoard list tickets` - List all tickets
 - `@KanbanBoard create ticket` - Create a new ticket with specified type and priority
