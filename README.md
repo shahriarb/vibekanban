@@ -115,6 +115,18 @@ In Cursor MCP settings:
 - Type: Command 
 - Command: /full/path/to/.venv/bin/python /full/path/to/kanban_mcp_server.py
 
+Example `mcp.json`:
+```
+{
+  "mcpServers": {
+    "KanbanBoard": {
+      "command": "/full/path/to/.venv/bin/python /full/path/to/kanban_mcp_server.py",
+      "args": [],
+      "enabled": true
+    }
+  }
+}
+```
 
 ### Using the KanbanBoard MCP
 
