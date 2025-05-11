@@ -14,7 +14,17 @@
     <nav class="bg-indigo-600 text-white shadow-md">
         <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center">
-                <div class="text-xl font-bold">Kanban Board</div>
+                <div class="flex items-center space-x-2">
+                    <!-- VibeKanban SVG Logo -->
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="inline-block align-middle">
+                      <rect x="2" y="6" width="8" height="20" rx="2" fill="#6366F1"/>
+                      <rect x="12" y="2" width="8" height="24" rx="2" fill="#A5B4FC"/>
+                      <rect x="22" y="10" width="8" height="16" rx="2" fill="#6366F1"/>
+                      <circle cx="26" cy="26" r="3" fill="#FACC15" stroke="#6366F1" stroke-width="1.5"/>
+                      <circle cx="6" cy="4" r="2" fill="#F472B6" stroke="#6366F1" stroke-width="1.2"/>
+                    </svg>
+                    <span class="text-xl font-bold tracking-tight">VibeKanban</span>
+                </div>
                 <div class="flex space-x-4">
                     <a href="{{ url_for('projects.dashboard') }}" class="hover:text-indigo-200">Projects</a>
                     <a href="{{ url_for('metrics.dashboard') }}" class="hover:text-indigo-200">Metrics</a>
