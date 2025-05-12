@@ -155,8 +155,19 @@
             const content = document.createElement('div');
             
             const heading = document.createElement('h3');
-            heading.className = 'text-lg font-semibold mb-2 text-indigo-700';
-            heading.textContent = project.name;
+            heading.className = 'text-lg font-semibold mb-2 text-indigo-700 flex items-center';
+            
+            // Project name
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = project.name;
+            
+            // Project ID visual element
+            const idSpan = document.createElement('span');
+            idSpan.className = 'ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono';
+            idSpan.textContent = `(${project.id})`;
+            
+            heading.appendChild(nameSpan);
+            heading.appendChild(idSpan);
             
             const description = document.createElement('p');
             description.className = 'text-gray-600 mb-4 line-clamp-2';
