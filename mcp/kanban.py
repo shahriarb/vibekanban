@@ -88,6 +88,8 @@ def get_tickets_from_db(project_id=None):
             result += f"Type: {ticket_dict.get('type_name', 'Unknown')}\n"
             if ticket_dict.get("why"):
                 result += f"Why: {ticket_dict['why']}\n"
+            result += f"Created: {ticket_dict.get('created_date', 'N/A')}\n"
+            result += f"Completed: {ticket_dict.get('completed_date', 'N/A')}\n"
             result += "\n"
 
         return result
