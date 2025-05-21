@@ -175,6 +175,13 @@
           >
             <i class="fas fa-arrow-left mr-2"></i> Back to Projects
           </a>
+          <a
+            id="archived-tickets-link"
+            href="/tickets/archived{% if project_id %}?project_id={{ project_id }}{% endif %}"
+            class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100"
+          >
+            <i class="fas fa-archive mr-2"></i> Archived tickets
+          </a>
         </div>
       </div>
       <p id="project-description" class="text-gray-600">
