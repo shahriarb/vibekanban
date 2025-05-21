@@ -14,6 +14,7 @@ from app import create_app, db
 from app.models.project import Project
 from app.models.ticket import Ticket, TicketState
 from app.models.comments import Comment
+from app.db_updates import ensure_archived_state_exists
 
 # Initialize FastMCP server
 mcp = FastMCP("kanban-board")
@@ -21,6 +22,10 @@ mcp = FastMCP("kanban-board")
 # Create app context for database access
 app = create_app()
 app_context = app.app_context()
+
+# Ensure 'archived' state exists
+with app_context:
+    ensure_archived_state_exists()
 
 
 # Database access functions
