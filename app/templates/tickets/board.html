@@ -1045,6 +1045,13 @@
       header.appendChild(type);
       header.appendChild(actions);
 
+      // Ticket number (ID) badge
+      const idBadge = document.createElement("span");
+      idBadge.className =
+        "ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono";
+      idBadge.textContent = `#${ticket.id}`;
+      header.appendChild(idBadge);
+
       const what = document.createElement("p");
       what.className = "font-semibold mb-2";
       what.textContent = ticket.what;
@@ -1082,14 +1089,7 @@
       if (ticket.why) {
         additionalInfo += `<div class="mb-1"><span class="font-semibold text-gray-600">Why:</span> ${ticket.why}</div>`;
       }
-
-      if (ticket.acceptance_criteria) {
-        additionalInfo += `<div><span class="font-semibold text-gray-600">Acceptance:</span> ${ticket.acceptance_criteria}</div>`;
-      }
-
-      if (ticket.test_steps) {
-        additionalInfo += `<div><span class="font-semibold text-gray-600">Test Steps:</span> ${ticket.test_steps}</div>`;
-      }
+      // Acceptance and Test Steps are intentionally omitted from the summary card
 
       const details = document.createElement("div");
       details.className = "text-sm text-gray-600 overflow-hidden";
