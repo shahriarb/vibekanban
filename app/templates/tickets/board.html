@@ -874,7 +874,12 @@
     function createColumns(states) {
       kanbanBoard.innerHTML = "";
 
-      states.forEach((state) => {
+      // Filter out the 'archived' state
+      const filteredStates = states.filter(
+        (state) => state.name.toLowerCase() !== "archived"
+      );
+
+      filteredStates.forEach((state) => {
         const column = document.createElement("div");
         column.className = "bg-gray-100 rounded-lg p-3 kanban-column";
         column.dataset.stateId = state.id;
