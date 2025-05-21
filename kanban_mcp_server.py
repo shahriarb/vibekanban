@@ -361,6 +361,12 @@ async def list_tickets(project_id: Optional[int] = None) -> str:
     Usage:
         Use this tool to review the current work items, bugs, or stories in a project or across all projects. Helpful for planning, triage, or reporting.
     """
+    # Harden project_id to accept string or int
+    if project_id is not None:
+        try:
+            project_id = int(project_id)
+        except (ValueError, TypeError):
+            project_id = None
     with app_context:
         return get_tickets_from_db(project_id)
 
