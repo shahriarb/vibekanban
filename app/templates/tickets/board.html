@@ -2015,10 +2015,17 @@
           renderDependencies();
           renderDependents();
 
-          // Update dependency status if all dependencies have state = 3 (done)
+          // Update dependency status if all dependencies have state = 'done'
+          const doneState = ticketStates.find(
+            (s) => s.name.toLowerCase() === "done"
+          );
+          const doneStateId = doneState ? doneState.id : null;
           const allDone =
             currentTicketDependencies.length === 0 ||
-            currentTicketDependencies.every((dep) => dep.state == 3);
+            (doneStateId !== null &&
+              currentTicketDependencies.every(
+                (dep) => dep.state == doneStateId
+              ));
           updateDependencyStatus(allDone);
         })
         .catch((error) => {
