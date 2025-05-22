@@ -1,1927 +1,2217 @@
-{% extends "base.html" %}
-
-{% block title %}Kanban Board - Tickets{% endblock %}
-
+{% extends "base.html" %} {% block title %}Kanban Board - Tickets{% endblock %}
 {% block styles %}
 <style>
-    .kanban-column {
-        min-height: 500px;
-        transition: background-color 0.2s ease;
-        padding: 0.75rem !important;
-    }
-    
-    .kanban-column.highlight {
-        background-color: #e0f2fe;
-    }
-    
-    .ticket-card {
-        cursor: grab;
-        transition: all 0.2s ease;
-        position: relative;
-        user-select: none; /* Prevent text selection during drag */
-        padding: 0.75rem !important;
-        margin-bottom: 0.5rem;
-    }
-    
-    .ticket-card:active {
-        cursor: grabbing;
-    }
-    
-    .ticket-card.dragging {
-        opacity: 0.5;
-        transform: scale(0.95);
-        z-index: 1000;
-    }
-    
-    .ticket-card.updating {
-        background-color: #f3f4f6;
-    }
-    
-    .ticket-card::before {
-        content: "";
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        width: 6px;
-        height: 10px;
-        background: #e5e7eb;
-        border-radius: 3px;
-        opacity: 0.5;
-    }
-    
-    .tickets-container {
-        min-height: 100px;
-        padding: 8px 0;
-        transition: background-color 0.2s ease;
-    }
-    
-    .tickets-container.space-y-2 {
-        --tw-space-y-reverse: 0;
-        margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
-        margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
-    }
-    
-    .attachment-list {
-        margin-top: 8px;
-        padding-top: 8px;
-        border-top: 1px solid #e5e7eb;
-    }
-    
-    .attachment-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 4px 0;
-    }
-    
-    .attachment-name {
-        flex-grow: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        margin-right: 8px;
-    }
-    
-    .custom-file-upload {
-        border: 1px solid #ccc;
-        display: inline-block;
-        padding: 6px 12px;
-        cursor: pointer;
-        background-color: #f9fafb;
-        border-radius: 0.25rem;
-    }
-    
-    .file-input {
-        display: none;
-    }
-    
-    /* Animation for moving tickets */
-    @keyframes ticket-move {
-        0% { transform: translateY(0) scale(1); }
-        50% { transform: translateY(10px) scale(0.98); }
-        100% { transform: translateY(0) scale(1); }
-    }
-    
-    .ticket-moving {
-        animation: ticket-move 0.3s ease;
-    }
-    
-    /* Modal styling */
-    .modal-content {
-        max-height: 80vh;
-        overflow-y: auto;
-        width: 100%;
-        padding-right: 10px; /* Add some padding to account for scrollbar */
-    }
-    
-    /* Comments section styling */
-    #comments-list {
-        max-height: 200px;
-        overflow-y: auto;
-        padding-right: 5px;
-    }
-    
-    /* For Firefox */
-    .modal-content {
-        scrollbar-width: thin;
-        scrollbar-color: #e5e7eb #ffffff;
-    }
-    
-    /* For Chrome, Edge, and Safari */
-    .modal-content::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    .modal-content::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-    
-    .modal-content::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 4px;
-    }
-    
-    .modal-content::-webkit-scrollbar-thumb:hover {
-        background: #a0a0a0;
-    }
-    
-    #comments-list::-webkit-scrollbar {
-        width: 6px;
-    }
-</style>
-{% endblock %}
+  .kanban-column {
+    min-height: 500px;
+    transition: background-color 0.2s ease;
+    padding: 0.75rem !important;
+  }
 
-{% block content %}
+  .kanban-column.highlight {
+    background-color: #e0f2fe;
+  }
+
+  .ticket-card {
+    cursor: grab;
+    transition: all 0.2s ease;
+    position: relative;
+    user-select: none; /* Prevent text selection during drag */
+    padding: 0.75rem !important;
+    margin-bottom: 0.5rem;
+  }
+
+  .ticket-card:active {
+    cursor: grabbing;
+  }
+
+  .ticket-card.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+    z-index: 1000;
+  }
+
+  .ticket-card.updating {
+    background-color: #f3f4f6;
+  }
+
+  .ticket-card::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 6px;
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 3px;
+    opacity: 0.5;
+  }
+
+  .tickets-container {
+    min-height: 100px;
+    padding: 8px 0;
+    transition: background-color 0.2s ease;
+  }
+
+  .tickets-container.space-y-2 {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
+  }
+
+  .attachment-list {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .attachment-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+
+  .attachment-name {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-right: 8px;
+  }
+
+  .custom-file-upload {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    cursor: pointer;
+    background-color: #f9fafb;
+    border-radius: 0.25rem;
+  }
+
+  .file-input {
+    display: none;
+  }
+
+  /* Animation for moving tickets */
+  @keyframes ticket-move {
+    0% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(10px) scale(0.98);
+    }
+    100% {
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .ticket-moving {
+    animation: ticket-move 0.3s ease;
+  }
+
+  /* Modal styling */
+  .modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+    width: 100%;
+    padding-right: 10px; /* Add some padding to account for scrollbar */
+  }
+
+  /* Comments section styling */
+  #comments-list {
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 5px;
+  }
+
+  /* For Firefox */
+  .modal-content {
+    scrollbar-width: thin;
+    scrollbar-color: #e5e7eb #ffffff;
+  }
+
+  /* For Chrome, Edge, and Safari */
+  .modal-content::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .modal-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  .modal-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+
+  .modal-content::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0;
+  }
+
+  #comments-list::-webkit-scrollbar {
+    width: 6px;
+  }
+</style>
+{% endblock %} {% block content %}
 <!-- Main container with title and board -->
 <div id="board-view">
-    <!-- Project title container -->
-    <div id="project-title-container">
-        <div id="project-header" class="mb-6">
-            <div class="flex items-center justify-between mb-2">
-                <h1 id="project-name" class="text-2xl font-bold">Loading project...</h1>
-                <div class="flex space-x-2">
-                    <button id="new-ticket-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded" disabled>
-                        <i class="fas fa-plus mr-2"></i> New Ticket
-                    </button>
-                    <a href="{{ url_for('projects.dashboard') }}" class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
-                        <i class="fas fa-arrow-left mr-2"></i> Back to Projects
-                    </a>
-                </div>
-            </div>
-            <p id="project-description" class="text-gray-600">Loading project details...</p>
+  <!-- Project title container -->
+  <div id="project-title-container">
+    <div id="project-header" class="mb-6">
+      <div class="flex items-center justify-between mb-2">
+        <h1 id="project-name" class="text-2xl font-bold">Loading project...</h1>
+        <div class="flex space-x-2">
+          <button
+            id="new-ticket-btn"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+            disabled
+          >
+            <i class="fas fa-plus mr-2"></i> New Ticket
+          </button>
+          <a
+            href="{{ url_for('projects.dashboard') }}"
+            class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100"
+          >
+            <i class="fas fa-arrow-left mr-2"></i> Back to Projects
+          </a>
+          <a
+            id="archived-tickets-link"
+            href="/tickets/archived{% if project_id %}?project_id={{ project_id }}{% endif %}"
+            class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100"
+          >
+            <i class="fas fa-archive mr-2"></i> Archived tickets
+          </a>
         </div>
+      </div>
+      <p id="project-description" class="text-gray-600">
+        Loading project details...
+      </p>
     </div>
+  </div>
 
-    <!-- Error message display -->
-    <div id="error-message" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden"></div>
+  <!-- Error message display -->
+  <div
+    id="error-message"
+    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden"
+  ></div>
 
-    <!-- Project selection form (shown if no project_id in URL) -->
-    <div id="project-selection" class="bg-white rounded-lg shadow-md p-6 mb-6 hidden">
-        <h2 class="text-lg font-bold mb-4">Select a Project</h2>
-        <form id="project-select-form" class="flex items-end space-x-4">
-            <div class="flex-grow">
-                <label for="project-select" class="block text-gray-700 mb-2">Project</label>
-                <select id="project-select" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="">Select a project</option>
-                    <!-- Projects will be loaded here -->
-                </select>
-            </div>
-            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                Load Board
-            </button>
-        </form>
-    </div>
+  <!-- Project selection form (shown if no project_id in URL) -->
+  <div
+    id="project-selection"
+    class="bg-white rounded-lg shadow-md p-6 mb-6 hidden"
+  >
+    <h2 class="text-lg font-bold mb-4">Select a Project</h2>
+    <form id="project-select-form" class="flex items-end space-x-4">
+      <div class="flex-grow">
+        <label for="project-select" class="block text-gray-700 mb-2"
+          >Project</label
+        >
+        <select
+          id="project-select"
+          class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="">Select a project</option>
+          <!-- Projects will be loaded here -->
+        </select>
+      </div>
+      <button
+        type="submit"
+        class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+      >
+        Load Board
+      </button>
+    </form>
+  </div>
 
-    <!-- Kanban board -->
-    <div id="kanban-board" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <!-- Columns will be generated dynamically -->
-        <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
-        <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
-        <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
-        <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
-    </div>
+  <!-- Kanban board -->
+  <div id="kanban-board" class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+    <!-- Columns will be generated dynamically -->
+    <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
+    <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
+    <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
+    <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
+    <div class="animate-pulse bg-gray-100 rounded-lg p-4 kanban-column"></div>
+  </div>
 
-    <!-- Empty state -->
-    <div id="empty-state" class="hidden text-center py-12">
-        <i class="fas fa-ticket-alt text-gray-400 text-5xl mb-4"></i>
-        <p class="text-gray-500 text-xl mb-4">No tickets found</p>
-        <p class="text-gray-400 mb-4">Create your first ticket to get started</p>
-        <button id="empty-new-ticket-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
-            <i class="fas fa-plus mr-2"></i> Create Ticket
+  <!-- Empty state -->
+  <div id="empty-state" class="hidden text-center py-12">
+    <i class="fas fa-ticket-alt text-gray-400 text-5xl mb-4"></i>
+    <p class="text-gray-500 text-xl mb-4">No tickets found</p>
+    <p class="text-gray-400 mb-4">Create your first ticket to get started</p>
+    <button
+      id="empty-new-ticket-btn"
+      class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+    >
+      <i class="fas fa-plus mr-2"></i> Create Ticket
+    </button>
+  </div>
+
+  <!-- Ticket Modal -->
+  <div
+    id="ticket-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4"
+  >
+    <div
+      class="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+    >
+      <div
+        class="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10"
+      >
+        <h2 id="modal-title" class="text-xl font-bold">New Ticket</h2>
+        <button class="modal-close text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
         </button>
-    </div>
+      </div>
 
-    <!-- Ticket Modal -->
-    <div id="ticket-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10">
-                <h2 id="modal-title" class="text-xl font-bold">New Ticket</h2>
-                <button class="modal-close text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="modal-content">
-                <form id="ticket-form" class="p-4">
-                    <input type="hidden" id="ticket-id" value="">
-                    <input type="hidden" id="ticket-project-id" value="">
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="col-span-1">
-                            <label for="ticket-type" class="block text-gray-700 mb-2">Type</label>
-                            <select id="ticket-type" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                                <!-- Ticket types will be loaded here -->
-                                <option value="">Loading types...</option>
-                            </select>
-                        </div>
-                        
-                        <div class="col-span-1">
-                            <label for="ticket-priority" class="block text-gray-700 mb-2">Priority</label>
-                            <select id="ticket-priority" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <!-- Ticket priorities will be loaded here -->
-                                <option value="">Loading priorities...</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <label for="ticket-what" class="block text-gray-700 mb-2">What</label>
-                        <textarea id="ticket-what" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="2" required></textarea>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <label for="ticket-why" class="block text-gray-700 mb-2">Why</label>
-                        <textarea id="ticket-why" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="2"></textarea>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <label for="ticket-acceptance" class="block text-gray-700 mb-2">Acceptance Criteria</label>
-                        <textarea id="ticket-acceptance" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3"></textarea>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <label for="ticket-test-steps" class="block text-gray-700 mb-2">Test Steps</label>
-                        <textarea id="ticket-test-steps" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="Steps to test this functionality..."></textarea>
-                    </div>
-                    
-                    <!-- Dependencies section -->
-                    <div id="dependencies-container" class="mt-5 hidden">
-                        <label class="block text-gray-700 mb-2 font-medium">Dependencies</label>
-                        <div id="dependencies-list" class="bg-gray-50 rounded p-2 mb-2 max-h-[150px] overflow-y-auto">
-                            <p id="no-dependencies-message" class="text-gray-500 text-sm">No dependencies</p>
-                        </div>
-                        
-                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-2">
-                            <select id="add-dependency-select" class="w-full sm:flex-grow border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
-                                <option value="">-- Select Ticket --</option>
-                                <!-- Other tickets will be loaded here -->
-                            </select>
-                            <button type="button" id="add-dependency-btn" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm">
-                                Add
-                            </button>
-                        </div>
-                        
-                        <div id="dependency-status" class="p-2 rounded mt-2 hidden">
-                            <!-- Will show dependency status -->
-                        </div>
-                    </div>
-                    
-                    <div id="dependents-container" class="mt-5 hidden">
-                        <label class="block text-gray-700 mb-2 font-medium">Tickets that depend on this</label>
-                        <div id="dependents-list" class="bg-gray-50 rounded p-2 max-h-[150px] overflow-y-auto">
-                            <p id="no-dependents-message" class="text-gray-500 text-sm">No dependent tickets</p>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-5" id="ticket-state-container">
-                        <label for="ticket-state" class="block text-gray-700 mb-2">State</label>
-                        <select id="ticket-state" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                            <!-- Ticket states will be loaded here -->
-                            <option value="">Loading states...</option>
-                        </select>
-                    </div>
-                    
-                    <!-- File attachments section (visible only when editing) -->
-                    <div id="attachments-container" class="mt-5 hidden">
-                        <label class="block text-gray-700 mb-2 font-medium">Attachments</label>
-                        <div id="attachments-list" class="bg-gray-50 rounded p-2 mb-2 max-h-[150px] overflow-y-auto">
-                            <p id="no-attachments-message" class="text-gray-500 text-sm">No attachments yet</p>
-                        </div>
-                        
-                        <label for="file-upload" class="custom-file-upload inline-block px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 cursor-pointer">
-                            <i class="fas fa-cloud-upload-alt mr-2"></i> Add Attachment
-                        </label>
-                        <input id="file-upload" type="file" class="file-input hidden" />
-                    </div>
-                    
-                    <!-- Comments section -->
-                    <div id="comments-container" class="mt-5 hidden">
-                        <label class="block text-gray-700 mb-2 font-medium">Comments</label>
-                        <div id="comments-list" class="space-y-2 mb-4 border rounded p-2 max-h-[200px] overflow-y-auto">
-                            <div id="no-comments-message" class="text-gray-500 italic">No comments yet</div>
-                        </div>
-                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                            <textarea id="comment-input" rows="2" class="w-full sm:flex-grow rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Add a comment..."></textarea>
-                            <button type="button" id="add-comment-btn" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Add Comment</button>
-                        </div>
-                    </div>
-                    
-                    <div class="flex justify-end space-x-3 mt-6">
-                        <button type="button" class="modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
-                            Cancel
-                        </button>
-                        <button type="submit" id="save-ticket-btn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                            Save Ticket
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+      <div class="modal-content">
+        <form id="ticket-form" class="p-4">
+          <input type="hidden" id="ticket-id" value="" />
+          <input type="hidden" id="ticket-project-id" value="" />
 
-    <!-- Delete Confirmation Modal -->
-    <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-            <div class="mb-4">
-                <h2 class="text-xl font-bold">Confirm Delete</h2>
-                <p class="text-gray-600 mt-2">Are you sure you want to delete this ticket?</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="col-span-1">
+              <label for="ticket-type" class="block text-gray-700 mb-2"
+                >Type</label
+              >
+              <select
+                id="ticket-type"
+                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+              >
+                <!-- Ticket types will be loaded here -->
+                <option value="">Loading types...</option>
+              </select>
             </div>
-            
-            <div class="flex justify-end space-x-3">
-                <button type="button" class="delete-modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
-                    Cancel
-                </button>
-                <button type="button" id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                    Delete Ticket
-                </button>
+
+            <div class="col-span-1">
+              <label for="ticket-priority" class="block text-gray-700 mb-2"
+                >Priority</label
+              >
+              <select
+                id="ticket-priority"
+                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <!-- Ticket priorities will be loaded here -->
+                <option value="">Loading priorities...</option>
+              </select>
             </div>
-        </div>
+          </div>
+
+          <div class="mt-4">
+            <label for="ticket-what" class="block text-gray-700 mb-2"
+              >What</label
+            >
+            <textarea
+              id="ticket-what"
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              rows="2"
+              required
+            ></textarea>
+          </div>
+
+          <div class="mt-4">
+            <label for="ticket-why" class="block text-gray-700 mb-2">Why</label>
+            <textarea
+              id="ticket-why"
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              rows="2"
+            ></textarea>
+          </div>
+
+          <div class="mt-4">
+            <label for="ticket-acceptance" class="block text-gray-700 mb-2"
+              >Acceptance Criteria</label
+            >
+            <textarea
+              id="ticket-acceptance"
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="mt-4">
+            <label for="ticket-test-steps" class="block text-gray-700 mb-2"
+              >Test Steps</label
+            >
+            <textarea
+              id="ticket-test-steps"
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              rows="3"
+              placeholder="Steps to test this functionality..."
+            ></textarea>
+          </div>
+
+          <!-- Dependencies section -->
+          <div id="dependencies-container" class="mt-5 hidden">
+            <label class="block text-gray-700 mb-2 font-medium"
+              >Dependencies</label
+            >
+            <div
+              id="dependencies-list"
+              class="bg-gray-50 rounded p-2 mb-2 max-h-[150px] overflow-y-auto"
+            >
+              <p id="no-dependencies-message" class="text-gray-500 text-sm">
+                No dependencies
+              </p>
+            </div>
+
+            <div
+              class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-2"
+            >
+              <select
+                id="add-dependency-select"
+                class="w-full sm:flex-grow border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+              >
+                <option value="">-- Select Ticket --</option>
+                <!-- Other tickets will be loaded here -->
+              </select>
+              <button
+                type="button"
+                id="add-dependency-btn"
+                class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm"
+              >
+                Add
+              </button>
+            </div>
+
+            <div id="dependency-status" class="p-2 rounded mt-2 hidden">
+              <!-- Will show dependency status -->
+            </div>
+          </div>
+
+          <div id="dependents-container" class="mt-5 hidden">
+            <label class="block text-gray-700 mb-2 font-medium"
+              >Tickets that depend on this</label
+            >
+            <div
+              id="dependents-list"
+              class="bg-gray-50 rounded p-2 max-h-[150px] overflow-y-auto"
+            >
+              <p id="no-dependents-message" class="text-gray-500 text-sm">
+                No dependent tickets
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-5" id="ticket-state-container">
+            <label for="ticket-state" class="block text-gray-700 mb-2"
+              >State</label
+            >
+            <select
+              id="ticket-state"
+              class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            >
+              <!-- Ticket states will be loaded here -->
+              <option value="">Loading states...</option>
+            </select>
+          </div>
+
+          <!-- File attachments section (visible only when editing) -->
+          <div id="attachments-container" class="mt-5 hidden">
+            <label class="block text-gray-700 mb-2 font-medium"
+              >Attachments</label
+            >
+            <div
+              id="attachments-list"
+              class="bg-gray-50 rounded p-2 mb-2 max-h-[150px] overflow-y-auto"
+            >
+              <p id="no-attachments-message" class="text-gray-500 text-sm">
+                No attachments yet
+              </p>
+            </div>
+
+            <label
+              for="file-upload"
+              class="custom-file-upload inline-block px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 cursor-pointer"
+            >
+              <i class="fas fa-cloud-upload-alt mr-2"></i> Add Attachment
+            </label>
+            <input id="file-upload" type="file" class="file-input hidden" />
+          </div>
+
+          <!-- Comments section -->
+          <div id="comments-container" class="mt-5 hidden">
+            <label class="block text-gray-700 mb-2 font-medium">Comments</label>
+            <div
+              id="comments-list"
+              class="space-y-2 mb-4 border rounded p-2 max-h-[200px] overflow-y-auto"
+            >
+              <div id="no-comments-message" class="text-gray-500 italic">
+                No comments yet
+              </div>
+            </div>
+            <div
+              class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2"
+            >
+              <textarea
+                id="comment-input"
+                rows="2"
+                class="w-full sm:flex-grow rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                placeholder="Add a comment..."
+              ></textarea>
+              <button
+                type="button"
+                id="add-comment-btn"
+                class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+              >
+                Add Comment
+              </button>
+            </div>
+          </div>
+
+          <div class="flex justify-end space-x-3 mt-6">
+            <button
+              type="button"
+              class="modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              id="save-ticket-btn"
+              class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            >
+              Save Ticket
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div
+    id="delete-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"
+  >
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+      <div class="mb-4">
+        <h2 class="text-xl font-bold">Confirm Delete</h2>
+        <p class="text-gray-600 mt-2">
+          Are you sure you want to delete this ticket?
+        </p>
+      </div>
+
+      <div class="flex justify-end space-x-3">
+        <button
+          type="button"
+          class="delete-modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          id="confirm-delete-btn"
+          class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          Delete Ticket
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
-{% endblock %}
-
-{% block scripts %}
+{% endblock %} {% block scripts %}
 <script>
-    // Add this fetchJSON function definition at the top of the script - it may be missing or improperly implemented
-    function fetchJSON(url, options = {}) {
-        // Set default headers for JSON if not already provided
-        const fetchOptions = {
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json', // Add Accept header for JSON
-                ...(options.headers || {})
-            }
-        };
-        
-        console.log(`Fetching ${url} with options:`, fetchOptions);
-        
-        return fetch(url, fetchOptions)
-            .then(response => {
-                console.log(`Response from ${url}:`, response);
-                
-                // If response is not OK, log the actual text
-                if (!response.ok) {
-                    return response.text()
-                        .then(text => {
-                            console.error(`Error response body:`, text);
-                            try {
-                                // Try to parse as JSON
-                                const errorData = JSON.parse(text);
-                                throw new Error(errorData.error || `Server responded with ${response.status}: ${response.statusText}`);
-                            } catch (e) {
-                                // If can't parse as JSON, throw the text itself
-                                throw new Error(`Server responded with ${response.status}: ${text || response.statusText}`);
-                            }
-                        });
-                }
-                
-                // If response is OK, return text and then try to parse as JSON
-                return response.text().then(text => {
-                    if (!text) return {};
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        console.error('Error parsing JSON:', e, text);
-                        throw new Error('Failed to parse server response as JSON');
-                    }
-                });
-            });
-    }
-    
-    // Show error function in case it's missing
-    function showError(message) {
-        const errorElement = document.getElementById('error-message');
-        errorElement.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
-        errorElement.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
-        
-        // Check if this is an HTML error response
-        if (message.includes('<!DOCTYPE html>') || message.includes('<html')) {
-            errorElement.textContent = 'Server responded with an error. Please check the console for details.';
-            console.error('Server HTML error:', message);
-        } else {
-            errorElement.textContent = message;
-        }
-        
-        errorElement.classList.remove('hidden');
-        
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            errorElement.classList.add('hidden');
-        }, 5000);
-    }
+  // Add this fetchJSON function definition at the top of the script - it may be missing or improperly implemented
+  function fetchJSON(url, options = {}) {
+    // Set default headers for JSON if not already provided
+    const fetchOptions = {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json", // Add Accept header for JSON
+        ...(options.headers || {}),
+      },
+    };
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // DOM elements
-        const projectHeader = document.getElementById('project-header');
-        const projectName = document.getElementById('project-name');
-        const projectDescription = document.getElementById('project-description');
-        const projectSelection = document.getElementById('project-selection');
-        const projectSelect = document.getElementById('project-select');
-        const projectSelectForm = document.getElementById('project-select-form');
-        const kanbanBoard = document.getElementById('kanban-board');
-        const emptyState = document.getElementById('empty-state');
-        const newTicketBtn = document.getElementById('new-ticket-btn');
-        const emptyNewTicketBtn = document.getElementById('empty-new-ticket-btn');
-        const ticketModal = document.getElementById('ticket-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const ticketForm = document.getElementById('ticket-form');
-        const ticketId = document.getElementById('ticket-id');
-        const ticketProjectId = document.getElementById('ticket-project-id');
-        const ticketType = document.getElementById('ticket-type');
-        const ticketPriority = document.getElementById('ticket-priority');
-        const ticketWhat = document.getElementById('ticket-what');
-        const ticketWhy = document.getElementById('ticket-why');
-        const ticketAcceptance = document.getElementById('ticket-acceptance');
-        const ticketTestSteps = document.getElementById('ticket-test-steps');
-        const ticketState = document.getElementById('ticket-state');
-        const ticketStateContainer = document.getElementById('ticket-state-container');
-        const deleteModal = document.getElementById('delete-modal');
-        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-        const attachmentsContainer = document.getElementById('attachments-container');
-        const attachmentsList = document.getElementById('attachments-list');
-        const noAttachmentsMessage = document.getElementById('no-attachments-message');
-        const fileUpload = document.getElementById('file-upload');
-        
-        // Comment-related DOM elements
-        const commentsContainer = document.getElementById('comments-container');
-        const commentsList = document.getElementById('comments-list');
-        const noCommentsMessage = document.getElementById('no-comments-message');
-        const commentInput = document.getElementById('comment-input');
-        const addCommentBtn = document.getElementById('add-comment-btn');
-        
-        // Dependency-related DOM elements
-        const dependenciesContainer = document.getElementById('dependencies-container');
-        const dependenciesList = document.getElementById('dependencies-list');
-        const noDependenciesMessage = document.getElementById('no-dependencies-message');
-        const addDependencySelect = document.getElementById('add-dependency-select');
-        const addDependencyBtn = document.getElementById('add-dependency-btn');
-        const dependencyStatus = document.getElementById('dependency-status');
-        const dependentsContainer = document.getElementById('dependents-container');
-        const dependentsList = document.getElementById('dependents-list');
-        const noDependentsMessage = document.getElementById('no-dependents-message');
-        
-        // Global variables
-        let currentProjectId = null;
-        let ticketTypes = [];
-        let ticketStates = [];
-        let ticketPriorities = [];
-        let draggedTicket = null;
-        let currentTicketAttachments = [];
-        let currentTicketComments = [];
-        let allProjectTickets = [];
-        let currentTicketDependencies = [];
-        let currentTicketDependents = [];
-        let currentTicketId = null;
-        
-        // Check for URL query parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const projectIdParam = urlParams.get('project_id');
-        
-        // If a project_id is provided in the URL, hide the project selection and load tickets
-        if (projectIdParam) {
-            const parsedProjectId = parseInt(projectIdParam);
-            currentProjectId = parsedProjectId;
-            document.getElementById('project-selection').classList.add('hidden');
-            document.getElementById('board-view').classList.remove('hidden');
-            document.getElementById('project-title-container').classList.remove('hidden');
-            
-            // Load data
-            Promise.all([
-                loadTicketTypes(),
-                loadTicketStates(),
-                loadTicketPriorities(),
-                loadProject(parsedProjectId),
-                loadTickets(parsedProjectId)
-            ]).then(() => {
-                // Enable the New Ticket button after all data is loaded
-                newTicketBtn.removeAttribute('disabled');
-            }).catch(error => {
-                showError('Failed to load board data: ' + error.message);
-            });
-        } else {
-            // Otherwise, show the project selection form
-            document.getElementById('project-selection').classList.remove('hidden');
-            document.getElementById('board-view').classList.add('hidden');
-            document.getElementById('project-title-container').classList.add('hidden');
-            
-            // Load projects for the dropdown
-            loadProjects();
-        }
-        
-        // Add event listeners
-        newTicketBtn.addEventListener('click', () => openTicketModal());
-        emptyNewTicketBtn.addEventListener('click', () => openTicketModal());
-        
-        document.querySelectorAll('.modal-close').forEach(btn => {
-            btn.addEventListener('click', () => closeTicketModal());
-        });
-        
-        document.querySelectorAll('.delete-modal-close').forEach(btn => {
-            btn.addEventListener('click', () => closeDeleteModal());
-        });
-        
-        ticketForm.addEventListener('submit', handleTicketSubmit);
-        projectSelectForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const selectedProjectId = projectSelect.value;
-            if (selectedProjectId) {
-                window.location.href = `/tickets/board?project_id=${selectedProjectId}`;
-            }
-        });
-        
-        fileUpload.addEventListener('change', handleFileUpload);
-        
-        // Add event listeners for the dependency functionality
-        addDependencyBtn.addEventListener('click', handleAddDependency);
-        
-        // Functions
-        function loadProject(projectId) {
-            fetchJSON(`/projects/${projectId}`)
-                .then(project => {
-                    projectName.textContent = project.name;
-                    projectDescription.textContent = project.description || 'No description provided';
-                    ticketProjectId.value = project.id;
-                })
-                .catch(error => {
-                    showError('Failed to load project: ' + error.message);
-                });
-        }
-        
-        function loadProjects() {
-            fetchJSON('/projects/')
-                .then(projects => {
-                    projectSelect.innerHTML = '<option value="">Select a project</option>';
-                    
-                    if (projects && projects.length > 0) {
-                        projects.forEach(project => {
-                            const option = document.createElement('option');
-                            option.value = project.id;
-                            option.textContent = project.name;
-                            projectSelect.appendChild(option);
-                        });
-                    } else {
-                        const option = document.createElement('option');
-                        option.disabled = true;
-                        option.textContent = 'No projects available';
-                        projectSelect.appendChild(option);
-                    }
-                })
-                .catch(error => {
-                    showError('Failed to load projects: ' + error.message);
-                });
-        }
-        
-        function loadTicketTypes() {
-            return fetchJSON('/tickets/types')
-                .then(data => {
-                    ticketTypes = data;
-                    
-                    // Update the ticket type dropdown
-                    ticketType.innerHTML = '';
-                    data.forEach(type => {
-                        const option = document.createElement('option');
-                        option.value = type.id;
-                        option.textContent = type.name;
-                        ticketType.appendChild(option);
-                    });
-                });
-        }
-        
-        function loadTicketStates() {
-            return fetchJSON('/tickets/states')
-                .then(data => {
-                    ticketStates = data;
-                    
-                    // Update the ticket state dropdown
-                    ticketState.innerHTML = '';
-                    data.forEach(state => {
-                        const option = document.createElement('option');
-                        option.value = state.id;
-                        option.textContent = state.name;
-                        ticketState.appendChild(option);
-                    });
-                    
-                    // Reorder the states to ensure "on hold" appears between "in progress" and "done"
-                    const reorderedStates = [];
-                    
-                    // First add backlog
-                    const backlog = data.find(s => s.name.toLowerCase() === 'backlog');
-                    if (backlog) reorderedStates.push(backlog);
-                    
-                    // Then add in progress
-                    const inProgress = data.find(s => s.name.toLowerCase() === 'in progress');
-                    if (inProgress) reorderedStates.push(inProgress);
-                    
-                    // Then add on hold
-                    const onHold = data.find(s => s.name.toLowerCase() === 'on hold');
-                    if (onHold) reorderedStates.push(onHold);
-                    
-                    // Then add done
-                    const done = data.find(s => s.name.toLowerCase() === 'done');
-                    if (done) reorderedStates.push(done);
-                    
-                    // Add any other states that don't match the predefined order
-                    data.forEach(state => {
-                        const stateName = state.name.toLowerCase();
-                        if (stateName !== 'backlog' && 
-                            stateName !== 'in progress' && 
-                            stateName !== 'on hold' && 
-                            stateName !== 'done') {
-                            reorderedStates.push(state);
-                        }
-                    });
-                    
-                    // Create columns based on reordered states
-                    createColumns(reorderedStates);
-                });
-        }
-        
-        function loadTicketPriorities() {
-            return fetchJSON('/tickets/priorities')
-                .then(data => {
-                    ticketPriorities = data;
-                    
-                    // Update the ticket priority dropdown
-                    ticketPriority.innerHTML = '';
-                    
-                    // Add empty option for no priority
-                    const emptyOption = document.createElement('option');
-                    emptyOption.value = '';
-                    emptyOption.textContent = '-- Select Priority --';
-                    ticketPriority.appendChild(emptyOption);
-                    
-                    // Add all priority options
-                    data.forEach(priority => {
-                        const option = document.createElement('option');
-                        option.value = priority.id;
-                        option.textContent = priority.name;
-                        ticketPriority.appendChild(option);
-                    });
-                });
-        }
-        
-        function createColumns(states) {
-            kanbanBoard.innerHTML = '';
-            
-            states.forEach(state => {
-                const column = document.createElement('div');
-                column.className = 'bg-gray-100 rounded-lg p-3 kanban-column';
-                column.dataset.stateId = state.id;
-                
-                // Add drop event listeners to the column
-                column.addEventListener('dragover', handleDragOver);
-                column.addEventListener('dragenter', handleDragEnter);
-                column.addEventListener('dragleave', handleDragLeave);
-                column.addEventListener('drop', handleDrop);
-                
-                const header = document.createElement('div');
-                header.className = 'flex justify-between items-center mb-3 pb-1 border-b border-gray-300';
-                
-                const title = document.createElement('h3');
-                title.className = 'font-bold text-md capitalize';
-                title.textContent = state.name;
-                
-                const counter = document.createElement('span');
-                counter.className = 'text-gray-500 text-xs bg-white px-2 py-1 rounded-full';
-                counter.textContent = '0';
-                counter.id = `counter-${state.id}`;
-                
-                header.appendChild(title);
-                header.appendChild(counter);
-                
-                const ticketsContainer = document.createElement('div');
-                ticketsContainer.className = 'tickets-container space-y-2';
-                ticketsContainer.dataset.stateId = state.id;
-                
-                // Add drop event listeners to the tickets container too
-                ticketsContainer.addEventListener('dragover', handleDragOver);
-                ticketsContainer.addEventListener('dragenter', handleDragEnter);
-                ticketsContainer.addEventListener('dragleave', handleDragLeave);
-                ticketsContainer.addEventListener('drop', handleDrop);
-                
-                column.appendChild(header);
-                column.appendChild(ticketsContainer);
-                
-                kanbanBoard.appendChild(column);
-            });
-        }
-        
-        function loadTickets(projectId) {
-            if (!projectId) return;
-            
-            console.log(`Loading tickets for project ${projectId}`);
-            fetchJSON(`/tickets/?project_id=${projectId}`)
-                .then(tickets => {
-                    // Clear all ticket containers
-                    document.querySelectorAll('.tickets-container').forEach(container => {
-                        container.innerHTML = '';
-                    });
-                    
-                    if (tickets && tickets.length > 0) {
-                        console.log(`Loaded ${tickets.length} tickets`);
-                        kanbanBoard.classList.remove('hidden');
-                        emptyState.classList.add('hidden');
-                        
-                        // Group tickets by state
-                        const ticketsByState = {};
-                        tickets.forEach(ticket => {
-                            if (!ticketsByState[ticket.state]) {
-                                ticketsByState[ticket.state] = [];
-                            }
-                            ticketsByState[ticket.state].push(ticket);
-                        });
-                        
-                        // Add tickets to their respective columns
-                        Object.keys(ticketsByState).forEach(stateId => {
-                            const container = document.querySelector(`.tickets-container[data-state-id="${stateId}"]`);
-                            if (container) {
-                                // Update counter
-                                const counter = document.querySelector(`#counter-${stateId}`);
-                                if (counter) {
-                                    counter.textContent = ticketsByState[stateId].length;
-                                }
-                                
-                                // Add ticket cards
-                                ticketsByState[stateId].forEach(ticket => {
-                                    container.appendChild(createTicketCard(ticket));
-                                });
-                            }
-                        });
-                    } else {
-                        console.log('No tickets found');
-                        kanbanBoard.classList.add('hidden');
-                        emptyState.classList.remove('hidden');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading tickets:', error);
-                    showError('Failed to load tickets: ' + error.message);
-                });
-        }
-        
-        function createTicketCard(ticket) {
-            const card = document.createElement('div');
-            card.className = 'bg-white rounded-lg shadow-md p-3 ticket-card';
-            card.dataset.id = ticket.id;
-            card.dataset.state = ticket.state;
-            
-            // Add classes based on dependencies status
-            if (ticket.dependencies && ticket.dependencies.length > 0) {
-                if (!ticket.all_dependencies_resolved) {
-                    card.classList.add('border-l-4', 'border-orange-500');
-                } else {
-                    card.classList.add('border-l-4', 'border-green-500');
-                }
-            }
-            
-            // Make the card draggable
-            card.draggable = true;
-            
-            // Add drag event listeners
-            card.addEventListener('dragstart', handleDragStart);
-            card.addEventListener('dragend', handleDragEnd);
-            
-            // Add click event for editing the ticket (not moving)
-            card.addEventListener('click', function(e) {
-                // Don't trigger if clicking on a button or link inside the card
-                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A' || 
-                    e.target.closest('button') || e.target.closest('a')) {
-                    return;
-                }
-                
-                // Instead of handling movement, open the ticket for editing
-                openTicketModal(ticket);
-            });
-            
-            // Add visual cue this is draggable
-            card.title = "Drag to move this ticket";
-            
-            const header = document.createElement('div');
-            header.className = 'flex justify-between items-start mb-1';
-            
-            const type = document.createElement('span');
-            const typeName = ticket.type_name || getTypeNameById(ticket.type);
-            type.className = `px-2 py-0.5 rounded text-xs font-semibold ${getTypeClass(typeName)}`;
-            type.textContent = typeName;
-            
-            const actions = document.createElement('div');
-            actions.className = 'flex space-x-1';
-            
-            const editBtn = document.createElement('button');
-            editBtn.className = 'text-gray-500 hover:text-gray-700';
-            editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent the card click handler from firing
-                openTicketModal(ticket);
-            });
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'text-gray-500 hover:text-red-700';
-            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent the card click handler from firing
-                openDeleteModal(ticket.id);
-            });
-            
-            actions.appendChild(editBtn);
-            actions.appendChild(deleteBtn);
-            
-            header.appendChild(type);
-            header.appendChild(actions);
-            
-            const what = document.createElement('p');
-            what.className = 'font-semibold mb-2';
-            what.textContent = ticket.what;
-            
-            // Add priority badge if present
-            if (ticket.priority) {
-                const priorityBadge = document.createElement('div');
-                priorityBadge.className = `text-xs inline-block my-1 py-1 px-2 rounded ${getPriorityClass(ticket.priority_name)}`;
-                priorityBadge.textContent = `Priority: ${ticket.priority_name}`;
-                what.appendChild(document.createElement('br'));
-                what.appendChild(priorityBadge);
-            }
-            
-            // Add dependency badges if present
-            if (ticket.dependencies && ticket.dependencies.length > 0) {
-                const dependencyBadge = document.createElement('div');
-                dependencyBadge.className = 'text-xs inline-block my-1 py-1 px-2 rounded';
-                
-                if (!ticket.all_dependencies_resolved) {
-                    dependencyBadge.className += ' bg-orange-100 text-orange-800';
-                    dependencyBadge.textContent = `Dependencies: ${ticket.dependencies.length} (Not all resolved)`;
-                } else {
-                    dependencyBadge.className += ' bg-green-100 text-green-800';
-                    dependencyBadge.textContent = `Dependencies: ${ticket.dependencies.length} (All resolved)`;
-                }
-                
-                what.appendChild(document.createElement('br'));
-                what.appendChild(dependencyBadge);
-            }
-            
-            let additionalInfo = '';
-            if (ticket.why) {
-                additionalInfo += `<div class="mb-1"><span class="font-semibold text-gray-600">Why:</span> ${ticket.why}</div>`;
-            }
-            
-            if (ticket.acceptance_criteria) {
-                additionalInfo += `<div><span class="font-semibold text-gray-600">Acceptance:</span> ${ticket.acceptance_criteria}</div>`;
-            }
-            
-            if (ticket.test_steps) {
-                additionalInfo += `<div><span class="font-semibold text-gray-600">Test Steps:</span> ${ticket.test_steps}</div>`;
-            }
-            
-            const details = document.createElement('div');
-            details.className = 'text-sm text-gray-600 overflow-hidden';
-            details.innerHTML = additionalInfo;
-            
-            const dates = document.createElement('div');
-            dates.className = 'text-xs text-gray-500 mt-3 flex justify-between';
-            dates.innerHTML = `<span>Created: ${new Date(ticket.created_date).toLocaleDateString()}</span>`;
-            
-            if (ticket.completed_date) {
-                dates.innerHTML += `<span>Completed: ${new Date(ticket.completed_date).toLocaleDateString()}</span>`;
-            }
-            
-            card.appendChild(header);
-            card.appendChild(what);
-            
-            if (additionalInfo) {
-                card.appendChild(details);
-            }
-            
-            // Add attachments if any
-            if (ticket.attachments && ticket.attachments.length > 0) {
-                const attachmentsDiv = document.createElement('div');
-                attachmentsDiv.className = 'attachment-list text-xs text-gray-600';
-                
-                const attachmentLabel = document.createElement('div');
-                attachmentLabel.className = 'font-semibold mb-1';
-                attachmentLabel.innerHTML = '<i class="fas fa-paperclip mr-1"></i> Attachments:';
-                attachmentsDiv.appendChild(attachmentLabel);
-                
-                const attachmentCount = Math.min(ticket.attachments.length, 2);  // Show max 2 in card
-                for (let i = 0; i < attachmentCount; i++) {
-                    const attachment = ticket.attachments[i];
-                    const attachmentItem = document.createElement('div');
-                    attachmentItem.className = 'truncate';
-                    attachmentItem.innerHTML = `<a href="/attachments/${attachment.id}" class="text-indigo-600 hover:underline" target="_blank" title="${attachment.filename}">${attachment.filename}</a>`;
-                    attachmentsDiv.appendChild(attachmentItem);
-                }
-                
-                if (ticket.attachments.length > 2) {
-                    const moreItem = document.createElement('div');
-                    moreItem.className = 'text-gray-500 italic';
-                    moreItem.textContent = `+${ticket.attachments.length - 2} more...`;
-                    attachmentsDiv.appendChild(moreItem);
-                }
-                
-                card.appendChild(attachmentsDiv);
-            }
-            
-            card.appendChild(dates);
-            
-            return card;
-        }
-        
-        function getTypeNameById(typeId) {
-            const type = ticketTypes.find(t => t.id === typeId);
-            return type ? type.name : 'unknown';
-        }
-        
-        function getTypeClass(typeName) {
-            switch (typeName.toLowerCase()) {
-                case 'bug':
-                    return 'bg-red-100 text-red-800';
-                case 'story':
-                    return 'bg-green-100 text-green-800';
-                case 'spike':
-                    return 'bg-purple-100 text-purple-800';
-                default:
-                    return 'bg-gray-100 text-gray-800';
-            }
-        }
-        
-        function getPriorityClass(priority) {
-            if (!priority) return '';
-            
-            switch (priority.toLowerCase()) {
-                case 'critical':
-                    return 'bg-red-100 text-red-800';
-                case 'high':
-                    return 'bg-orange-100 text-orange-800';
-                case 'medium':
-                    return 'bg-yellow-100 text-yellow-800';
-                case 'low':
-                    return 'bg-green-100 text-green-800';
-                default:
-                    return 'bg-gray-100 text-gray-800';
-            }
-        }
-        
-        function getStateClass(state) {
-            if (!state) return 'bg-gray-100 text-gray-800';
-            
-            switch (state.toLowerCase()) {
-                case 'backlog':
-                    return 'bg-gray-100 text-gray-800';
-                case 'ready':
-                    return 'bg-blue-100 text-blue-800';
-                case 'in progress':
-                    return 'bg-yellow-100 text-yellow-800';
-                case 'on hold':
-                    return 'bg-amber-100 text-amber-800';
-                case 'done':
-                    return 'bg-green-100 text-green-800';
-                default:
-                    return 'bg-gray-100 text-gray-800';
-            }
-        }
-        
-        function getPriorityNameById(priorityId) {
-            if (!priorityId) return null;
-            const priority = ticketPriorities.find(p => p.id === parseInt(priorityId));
-            return priority ? priority.name : null;
-        }
-        
-        function openTicketModal(ticket = null) {
-            ticketForm.reset();
-            
-            if (ticket) {
-                currentTicketId = ticket.id;
-                modalTitle.textContent = 'Edit Ticket';
-                ticketId.value = ticket.id;
-                ticketProjectId.value = ticket.project_id;
-                ticketType.value = ticket.type;
-                ticketPriority.value = ticket.priority || '';
-                ticketWhat.value = ticket.what;
-                ticketWhy.value = ticket.why || '';
-                ticketAcceptance.value = ticket.acceptance_criteria || '';
-                ticketTestSteps.value = ticket.test_steps || '';
-                ticketState.value = ticket.state;
-                ticketStateContainer.classList.remove('hidden');
-                
-                // Show attachments container and load existing attachments
-                attachmentsContainer.classList.remove('hidden');
-                loadTicketAttachments(ticket.id);
-                
-                // Show comments container and load existing comments
-                commentsContainer.classList.remove('hidden');
-                loadTicketComments(ticket.id);
-                
-                // Show dependencies containers and load dependencies
-                dependenciesContainer.classList.remove('hidden');
-                dependentsContainer.classList.remove('hidden');
-                
-                // If ticket already has dependencies in the data, set them directly
-                if (ticket.dependencies && ticket.dependencies.length > 0) {
-                    currentTicketDependencies = ticket.dependencies;
-                    renderDependencies();
-                }
-                
-                // If ticket already has dependents in the data, set them directly
-                if (ticket.dependents && ticket.dependents.length > 0) {
-                    currentTicketDependents = ticket.dependents;
-                    renderDependents();
-                }
-                
-                // Update dependency status if we have the data
-                if (typeof ticket.all_dependencies_resolved !== 'undefined') {
-                    updateDependencyStatus(ticket.all_dependencies_resolved);
-                }
-                
-                // Always load fresh dependencies data from the server
-                loadTicketDependencies(ticket.id);
-                
-                // Load all project tickets for dependency selection (except current one)
-                loadProjectTicketsForDependencies(ticket.project_id, ticket.id);
-            } else {
-                currentTicketId = null;
-                modalTitle.textContent = 'New Ticket';
-                ticketId.value = '';
-                ticketProjectId.value = currentProjectId;
-                
-                // Get the backlog state for new tickets
-                const backlogState = ticketStates.find(state => state.name.toLowerCase() === 'backlog');
-                if (backlogState) {
-                    ticketState.value = backlogState.id;
-                }
-                
-                // Hide state selection, attachments, comments, and dependencies for new tickets
-                ticketStateContainer.classList.add('hidden');
-                attachmentsContainer.classList.add('hidden');
-                commentsContainer.classList.add('hidden');
-                dependenciesContainer.classList.add('hidden');
-                dependentsContainer.classList.add('hidden');
-                
-                // Clear state variables
-                currentTicketAttachments = [];
-                currentTicketComments = [];
-                currentTicketDependencies = [];
-                currentTicketDependents = [];
-                renderAttachments();
-                renderComments();
-                renderDependencies();
-                renderDependents();
-            }
-            
-            ticketModal.classList.remove('hidden');
-        }
-        
-        function closeTicketModal() {
-            ticketModal.classList.add('hidden');
-            // Clear current ticket ID to avoid confusion in future operations
-            currentTicketId = null;
-        }
-        
-        function openDeleteModal(ticketId) {
-            confirmDeleteBtn.dataset.id = ticketId;
-            deleteModal.classList.remove('hidden');
-            
-            confirmDeleteBtn.addEventListener('click', handleTicketDelete);
-        }
-        
-        function closeDeleteModal() {
-            deleteModal.classList.add('hidden');
-            confirmDeleteBtn.removeEventListener('click', handleTicketDelete);
-        }
-        
-        function handleTicketSubmit(e) {
-            e.preventDefault();
-            
-            const id = ticketId.value;
-            const ticketData = {
-                project_id: parseInt(ticketProjectId.value),
-                type: parseInt(ticketType.value),
-                priority: parseInt(ticketPriority.value),
-                what: ticketWhat.value,
-                why: ticketWhy.value,
-                acceptance_criteria: ticketAcceptance.value,
-                test_steps: ticketTestSteps.value,
-                state: parseInt(ticketState.value)
-            };
-            
-            let url = '/tickets/';
-            let method = 'POST';
-            
-            if (id) {
-                url = `/tickets/${id}`;
-                method = 'PUT';
-            }
-            
-            fetchJSON(url, {
-                method,
-                body: JSON.stringify(ticketData)
-            })
-                .then(() => {
-                    // After saving the ticket, if there are dependencies and we have a ticket ID, 
-                    // make sure they are properly saved as well
-                    if (id && currentTicketDependencies && currentTicketDependencies.length > 0) {
-                        // Process each dependency to ensure it's properly saved
-                        const dependenciesToProcess = [...currentTicketDependencies]; // Make a copy to avoid issues with async operations
-                        
-                        // Create a promise for each dependency to be processed
-                        const dependencyPromises = dependenciesToProcess.map(dependency => {
-                            return fetchJSON(`/dependencies/${id}/add/${dependency.id}`, {
-                                method: 'POST'
-                            }).catch(error => {
-                                console.error(`Error saving dependency ${dependency.id}: ${error.message}`);
-                            });
-                        });
-                        
-                        // Wait for all dependency operations to complete
-                        return Promise.all(dependencyPromises).then(() => {
-                            closeTicketModal();
-                            loadTickets(currentProjectId);
-                        });
-                    } else {
-                        closeTicketModal();
-                        loadTickets(currentProjectId);
-                    }
-                })
-                .catch(error => {
-                    showError('Failed to save ticket: ' + error.message);
-                });
-        }
-        
-        function handleTicketDelete() {
-            const ticketId = confirmDeleteBtn.dataset.id;
-            
-            fetchJSON(`/tickets/${ticketId}`, {
-                method: 'DELETE'
-            })
-                .then(() => {
-                    closeDeleteModal();
-                    loadTickets(currentProjectId);
-                })
-                .catch(error => {
-                    showError('Failed to delete ticket: ' + error.message);
-                });
-        }
-        
-        // Remove all the old drag and drop handlers and replace with:
-        let selectedTicket = null;
-        let selectedColumn = null;
-        
-        function handleDragStart(e) {
-            // Store the dragged ticket
-            draggedTicket = this;
-            
-            // Set data transfer
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', this.dataset.id);
-            
-            // Add styling class
-            setTimeout(() => this.classList.add('dragging'), 0);
-            
-            // Highlight columns this ticket can be moved to
-            highlightDropTargets();
-        }
-        
-        function handleDragEnd(e) {
-            // Remove styling class
-            this.classList.remove('dragging');
-            
-            // Remove highlights from all columns
-            document.querySelectorAll('.kanban-column').forEach(column => {
-                column.classList.remove('highlight');
-            });
-            
-            draggedTicket = null;
-        }
-        
-        function handleDragOver(e) {
-            // Prevent default to allow drop
-            e.preventDefault();
-            return false;
-        }
-        
-        function handleDragEnter(e) {
-            // Add highlight class
-            if (this.classList.contains('kanban-column') || 
-                this.classList.contains('tickets-container')) {
-                
-                // Only highlight if this is a different column than the ticket's current one
-                const columnStateId = this.dataset.stateId || this.parentElement.dataset.stateId;
-                if (columnStateId !== draggedTicket.dataset.state) {
-                    (this.classList.contains('kanban-column') ? this : this.parentElement)
-                        .classList.add('highlight');
-                }
-            }
-        }
-        
-        function handleDragLeave(e) {
-            // Remove highlight class
-            if (this.classList.contains('kanban-column')) {
-                this.classList.remove('highlight');
-            } else if (this.classList.contains('tickets-container')) {
-                this.parentElement.classList.remove('highlight');
-            }
-        }
-        
-        function handleDrop(e) {
-            // Prevent default action
-            e.preventDefault();
-            
-            // Get the target column/container
-            let targetContainer;
-            if (this.classList.contains('kanban-column')) {
-                // If dropped on column, use its tickets container
-                targetContainer = this.querySelector('.tickets-container');
-            } else if (this.classList.contains('tickets-container')) {
-                // If dropped directly on tickets container, use it
-                targetContainer = this;
-            } else {
-                // Not a valid drop target
-                return false;
-            }
-            
-            // Get the ticket ID and target state ID
-            const ticketId = parseInt(e.dataTransfer.getData('text/plain'));
-            const newStateId = parseInt(targetContainer.dataset.stateId);
-            const ticketCard = document.querySelector(`.ticket-card[data-id="${ticketId}"]`);
-            const currentStateId = parseInt(ticketCard.dataset.state);
-            
-            // Don't do anything if the ticket is already in this column
-            if (currentStateId === newStateId) {
-                return false;
-            }
-            
-            // Move the ticket
-            moveTicketToColumn(ticketCard, targetContainer);
-            
-            return false;
-        }
-        
-        function highlightDropTargets() {
-            if (!draggedTicket) return;
-            
-            document.querySelectorAll('.kanban-column').forEach(column => {
-                const columnStateId = column.dataset.stateId;
-                
-                // Don't highlight the column the ticket is already in
-                if (columnStateId !== draggedTicket.dataset.state) {
-                    column.classList.add('highlight');
-                }
-            });
-        }
-        
-        function moveTicketToColumn(ticket, ticketsContainer) {
-            const ticketId = parseInt(ticket.dataset.id);
-            const newStateId = parseInt(ticketsContainer.dataset.stateId);
-            const currentStateId = parseInt(ticket.dataset.state);
-            
-            // Don't do anything if the ticket is already in this column
-            if (currentStateId === newStateId) {
-                return;
-            }
-            
-            console.log(`Moving ticket ${ticketId} from state ${currentStateId} to state ${newStateId}`);
-            
-            // Add visual indication that update is in progress
-            ticket.classList.add('updating');
-            
-            // Clone the ticket for animation purposes
-            const ticketClone = ticket.cloneNode(true);
-            ticketClone.style.position = 'absolute';
-            ticketClone.style.zIndex = '1000';
-            ticketClone.style.width = ticket.offsetWidth + 'px';
-            document.body.appendChild(ticketClone);
-            
-            // Position the clone over the original
-            const ticketRect = ticket.getBoundingClientRect();
-            ticketClone.style.top = ticketRect.top + window.scrollY + 'px';
-            ticketClone.style.left = ticketRect.left + 'px';
-            
-            // First, immediately move the ticket to the new column for instant feedback
-            ticketsContainer.appendChild(ticket);
-            
-            // Update ticket's state attribute
-            ticket.dataset.state = newStateId;
-            
-            // Add moving animation
-            ticket.classList.add('ticket-moving');
-            
-            setTimeout(() => {
-                ticket.classList.remove('ticket-moving');
-            }, 300);
-            
-            // Update counters
-            const oldCounter = document.getElementById(`counter-${currentStateId}`);
-            const newCounter = document.getElementById(`counter-${newStateId}`);
-            
-            if (oldCounter) {
-                oldCounter.textContent = parseInt(oldCounter.textContent) - 1;
-            }
-            
-            if (newCounter) {
-                newCounter.textContent = parseInt(newCounter.textContent) + 1;
-            }
-            
-            // Clean up the clone
-            document.body.removeChild(ticketClone);
-            
-            // Send the update to the server
-            fetch(`/tickets/${ticketId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ state: newStateId })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        throw new Error(`Server error: ${text}`);
-                    });
-                }
-                return response.text().then(text => text ? JSON.parse(text) : {});
-            })
-            .then(data => {
-                console.log('Ticket state updated successfully', data);
-                ticket.classList.remove('updating');
-                showSuccessMessage(`Ticket moved to ${getStateNameById(newStateId)}`);
-            })
-            .catch(error => {
-                console.error('Error updating ticket state:', error);
-                ticket.classList.remove('updating');
-                
-                // Move the ticket back to its original column on error
-                const originalContainer = document.querySelector(`.tickets-container[data-state-id="${currentStateId}"]`);
-                if (originalContainer && ticket.parentNode !== originalContainer) {
-                    originalContainer.appendChild(ticket);
-                    
-                    // Update ticket's state attribute back
-                    ticket.dataset.state = currentStateId;
-                    
-                    // Update counters back
-                    if (oldCounter) {
-                        oldCounter.textContent = parseInt(oldCounter.textContent) + 1;
-                    }
-                    
-                    if (newCounter) {
-                        newCounter.textContent = parseInt(newCounter.textContent) - 1;
-                    }
-                }
-                
-                showError(`Failed to update ticket state: ${error.message}`);
-            });
-        }
-        
-        function loadTicketAttachments(ticketId) {
-            if (!ticketId) return;
-            
-            fetchJSON(`/attachments/ticket/${ticketId}`)
-                .then(attachments => {
-                    currentTicketAttachments = attachments;
-                    renderAttachments();
-                })
-                .catch(error => {
-                    console.error('Failed to load attachments:', error);
-                    currentTicketAttachments = [];
-                    renderAttachments();
-                });
-        }
-        
-        function renderAttachments() {
-            // Clear previous attachments
-            while (attachmentsList.firstChild !== noAttachmentsMessage) {
-                if (attachmentsList.lastChild !== noAttachmentsMessage) {
-                    attachmentsList.removeChild(attachmentsList.lastChild);
-                } else {
-                    break;
-                }
-            }
-            
-            if (currentTicketAttachments.length === 0) {
-                noAttachmentsMessage.classList.remove('hidden');
-                return;
-            }
-            
-            noAttachmentsMessage.classList.add('hidden');
-            
-            // Add each attachment to the list
-            currentTicketAttachments.forEach(attachment => {
-                const attachmentItem = document.createElement('div');
-                attachmentItem.className = 'attachment-item text-sm';
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.className = 'attachment-name';
-                nameSpan.textContent = attachment.filename;
-                
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'flex space-x-2';
-                
-                const downloadLink = document.createElement('a');
-                downloadLink.href = `/attachments/${attachment.id}`;
-                downloadLink.className = 'text-indigo-600 hover:text-indigo-800';
-                downloadLink.target = '_blank';
-                downloadLink.innerHTML = '<i class="fas fa-download"></i>';
-                downloadLink.title = 'Download file';
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'text-red-600 hover:text-red-800';
-                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-                deleteBtn.title = 'Delete attachment';
-                deleteBtn.addEventListener('click', () => deleteAttachment(attachment.id));
-                
-                actionsDiv.appendChild(downloadLink);
-                actionsDiv.appendChild(deleteBtn);
-                
-                attachmentItem.appendChild(nameSpan);
-                attachmentItem.appendChild(actionsDiv);
-                
-                attachmentsList.appendChild(attachmentItem);
-            });
-        }
-        
-        function handleFileUpload() {
-            const file = fileUpload.files[0];
-            if (!file) return;
-            
-            const currentTicketId = ticketId.value;
-            if (!currentTicketId) {
-                alert('Please save the ticket first before adding attachments');
-                return;
-            }
-            
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            // Show loading state
-            const tempId = Date.now();
-            currentTicketAttachments.push({
-                id: `temp-${tempId}`,
-                filename: file.name + ' (Uploading...)',
-                isUploading: true
-            });
-            renderAttachments();
-            
-            // Upload file
-            fetch(`/attachments/ticket/${currentTicketId}`, {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Upload failed');
-                    }
-                    return response.json();
-                })
-                .then(attachment => {
-                    // Remove temp item and add real attachment
-                    currentTicketAttachments = currentTicketAttachments
-                        .filter(a => a.id !== `temp-${tempId}`)
-                        .concat(attachment);
-                    renderAttachments();
-                    
-                    // Reset file input
-                    fileUpload.value = '';
-                })
-                .catch(error => {
-                    console.error('Error uploading file:', error);
-                    alert('Failed to upload file: ' + error.message);
-                    
-                    // Remove temp item
-                    currentTicketAttachments = currentTicketAttachments
-                        .filter(a => a.id !== `temp-${tempId}`);
-                    renderAttachments();
-                    
-                    // Reset file input
-                    fileUpload.value = '';
-                });
-        }
-        
-        function deleteAttachment(attachmentId) {
-            if (confirm('Are you sure you want to delete this attachment?')) {
-                fetchJSON(`/attachments/${attachmentId}`, { method: 'DELETE' })
-                    .then(() => {
-                        currentTicketAttachments = currentTicketAttachments
-                            .filter(a => a.id !== attachmentId);
-                        renderAttachments();
-                    })
-                    .catch(error => {
-                        console.error('Error deleting attachment:', error);
-                        alert('Failed to delete attachment: ' + error.message);
-                    });
-            }
-        }
-        
-        // Add a state name helper function
-        function getStateNameById(stateId) {
-            const state = ticketStates.find(s => s.id === parseInt(stateId));
-            return state ? state.name : 'unknown';
-        }
-        
-        // Add a success message function
-        function showSuccessMessage(message) {
-            const errorElement = document.getElementById('error-message');
-            if (errorElement) {
-                errorElement.textContent = message;
-                errorElement.classList.remove('hidden');
-                errorElement.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
-                errorElement.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
-                
-                // Auto-hide after 2 seconds
-                setTimeout(() => {
-                    errorElement.classList.add('hidden');
-                    // Reset back to error styles for future errors
-                    errorElement.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
-                    errorElement.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
-                }, 2000);
-            } else {
-                console.log(message);
-            }
-        }
-        
-        function loadTicketComments(ticketId) {
-            if (!ticketId) return;
-            
-            // Clear existing comments
-            commentsList.innerHTML = '';
-            currentTicketComments = [];
-            
-            fetchJSON(`/api/v1/tickets/${ticketId}/comments`)
-                .then(comments => {
-                    currentTicketComments = comments;
-                    renderComments();
-                })
-                .catch(error => {
-                    console.error('Error loading comments:', error);
-                    showError('Failed to load comments: ' + error.message);
-                });
-        }
-        
-        function renderComments() {
-            // Clear previous comments
-            commentsList.innerHTML = '';
-            
-            if (currentTicketComments.length === 0) {
-                noCommentsMessage.classList.remove('hidden');
-                return;
-            }
-            
-            noCommentsMessage.classList.add('hidden');
-            
-            // Add each comment to the list
-            currentTicketComments.forEach(comment => {
-                const commentItem = document.createElement('div');
-                commentItem.className = 'bg-gray-50 rounded-lg p-3';
-                commentItem.dataset.commentId = comment.id;
-                
-                const content = document.createElement('p');
-                content.className = 'text-sm text-gray-700';
-                content.textContent = comment.content;
-                
-                const metadata = document.createElement('div');
-                metadata.className = 'text-xs text-gray-500 mt-2 flex justify-between items-center';
-                
-                const date = new Date(comment.created_date).toLocaleString();
-                metadata.innerHTML = `<span>${date}</span>`;
-                
-                const actions = document.createElement('div');
-                actions.className = 'flex space-x-2';
-                
-                const editBtn = document.createElement('button');
-                editBtn.className = 'text-indigo-600 hover:text-indigo-800';
-                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-                editBtn.title = 'Edit comment';
-                editBtn.addEventListener('click', () => editComment(comment.id));
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'text-red-600 hover:text-red-800';
-                deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-                deleteBtn.title = 'Delete comment';
-                deleteBtn.addEventListener('click', () => deleteComment(comment.id));
-                
-                actions.appendChild(editBtn);
-                actions.appendChild(deleteBtn);
-                
-                metadata.appendChild(actions);
-                
-                commentItem.appendChild(content);
-                commentItem.appendChild(metadata);
-                
-                commentsList.appendChild(commentItem);
-            });
-        }
-        
-        function handleAddComment() {
-            const content = commentInput.value.trim();
-            
-            if (!content) return;
-            
-            const currentTicketId = ticketId.value;
-            if (!currentTicketId) {
-                alert('Please save the ticket first before adding comments');
-                return;
-            }
-            
-            fetchJSON(`/api/v1/tickets/${currentTicketId}/comments`, {
-                method: 'POST',
-                body: JSON.stringify({ content })
-            })
-            .then(comment => {
-                currentTicketComments.push(comment);
-                renderComments();
-                commentInput.value = '';
-            })
-            .catch(error => {
-                console.error('Error adding comment:', error);
-                showError('Failed to add comment: ' + error.message);
-            });
-        }
-        
-        function editComment(commentId) {
-            const comment = currentTicketComments.find(c => c.id === commentId);
-            if (!comment) return;
-            
-            const commentItem = document.querySelector(`[data-comment-id="${commentId}"]`);
-            if (!commentItem) return;
-            
-            const content = prompt('Edit comment:', comment.content);
-            if (content === null || content.trim() === '') return;
-            
-            fetchJSON(`/api/v1/comments/${commentId}`, {
-                method: 'PUT',
-                body: JSON.stringify({ content: content.trim() })
-            })
-            .then(updatedComment => {
-                const index = currentTicketComments.findIndex(c => c.id === commentId);
-                if (index !== -1) {
-                    currentTicketComments[index] = updatedComment;
-                    renderComments();
-                }
-            })
-            .catch(error => {
-                console.error('Error updating comment:', error);
-                showError('Failed to update comment: ' + error.message);
-            });
-        }
-        
-        function deleteComment(commentId) {
-            if (!confirm('Are you sure you want to delete this comment?')) return;
-            
-            fetchJSON(`/api/v1/comments/${commentId}`, { method: 'DELETE' })
-                .then(() => {
-                    currentTicketComments = currentTicketComments.filter(c => c.id !== commentId);
-                    renderComments();
-                })
-                .catch(error => {
-                    console.error('Error deleting comment:', error);
-                    showError('Failed to delete comment: ' + error.message);
-                });
-        }
-        
-        // Add event listener for the add comment button
-        document.getElementById('add-comment-btn').addEventListener('click', handleAddComment);
+    console.log(`Fetching ${url} with options:`, fetchOptions);
 
-        // Dependency Management Functions
-        function loadProjectTicketsForDependencies(projectId, currentTicketId) {
-            if (!projectId) return;
-            
-            fetchJSON(`/tickets/?project_id=${projectId}`)
-                .then(tickets => {
-                    // Store all tickets for reference
-                    allProjectTickets = tickets;
-                    
-                    // Clear dependency select and add default option
-                    addDependencySelect.innerHTML = '<option value="">-- Select Ticket --</option>';
-                    
-                    // Add options for each ticket except current one
-                    tickets.forEach(ticket => {
-                        if (ticket.id != currentTicketId) {
-                            const option = document.createElement('option');
-                            option.value = ticket.id;
-                            option.textContent = `#${ticket.id}: ${ticket.what}`;
-                            addDependencySelect.appendChild(option);
-                        }
-                    });
-                })
-                .catch(error => {
-                    console.error('Failed to load project tickets:', error);
-                    showError('Failed to load project tickets: ' + error.message);
-                });
+    return fetch(url, fetchOptions).then((response) => {
+      console.log(`Response from ${url}:`, response);
+
+      // If response is not OK, log the actual text
+      if (!response.ok) {
+        return response.text().then((text) => {
+          console.error(`Error response body:`, text);
+          try {
+            // Try to parse as JSON
+            const errorData = JSON.parse(text);
+            throw new Error(
+              errorData.error ||
+                `Server responded with ${response.status}: ${response.statusText}`
+            );
+          } catch (e) {
+            // If can't parse as JSON, throw the text itself
+            throw new Error(
+              `Server responded with ${response.status}: ${
+                text || response.statusText
+              }`
+            );
+          }
+        });
+      }
+
+      // If response is OK, return text and then try to parse as JSON
+      return response.text().then((text) => {
+        if (!text) return {};
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          console.error("Error parsing JSON:", e, text);
+          throw new Error("Failed to parse server response as JSON");
         }
-        
-        function loadTicketDependencies(ticketId) {
-            if (!ticketId) {
-                console.warn('No ticket ID provided to loadTicketDependencies');
-                return Promise.resolve();
-            }
-            
-            // Store the ticket ID for reference
-            currentTicketId = ticketId;
-            
-            console.log(`Loading dependencies for ticket ${ticketId}`);
-            
-            // Show dependency-related UI sections
-            dependenciesContainer.classList.remove('hidden');
-            dependentsContainer.classList.remove('hidden');
-            
-            return fetchJSON(`/dependencies/${ticketId}`)
-                .then(data => {
-                    console.log('Dependencies loaded:', data);
-                    
-                    currentTicketDependencies = data.dependencies || [];
-                    currentTicketDependents = data.dependents || [];
-                    
-                    // Make sure we save the full dependency objects for later use
-                    currentTicketDependencies = currentTicketDependencies.map(dep => ({
-                        id: dep.id,
-                        what: dep.what,
-                        state: dep.state,
-                        state_name: dep.state_name
-                    }));
-                    
-                    renderDependencies();
-                    renderDependents();
-                    
-                    // Update dependency status if all dependencies have state = 3 (done)
-                    const allDone = currentTicketDependencies.length === 0 || 
-                                  currentTicketDependencies.every(dep => dep.state == 3);
-                    updateDependencyStatus(allDone);
-                })
-                .catch(error => {
-                    console.error('Failed to load dependencies:', error);
-                    showError('Failed to load dependencies: ' + error.message);
-                    return Promise.reject(error);
-                });
-        }
-        
-        function renderDependencies() {
-            if (!dependenciesList) return;
-            
-            if (currentTicketDependencies.length === 0) {
-                dependenciesList.innerHTML = '';
-                noDependenciesMessage.classList.remove('hidden');
-                return;
-            }
-            
-            noDependenciesMessage.classList.add('hidden');
-            dependenciesList.innerHTML = '';
-            
-            currentTicketDependencies.forEach(dependency => {
-                const item = document.createElement('div');
-                item.className = 'flex items-center justify-between py-1 border-b last:border-b-0 border-gray-200';
-                
-                const info = document.createElement('div');
-                info.className = 'flex-grow';
-                
-                // State badge
-                const stateBadge = document.createElement('span');
-                stateBadge.className = `inline-block px-2 py-1 mr-2 text-xs rounded ${getStateClass(dependency.state_name)}`;
-                stateBadge.textContent = dependency.state_name;
-                
-                const title = document.createElement('span');
-                title.className = 'text-sm';
-                title.textContent = `#${dependency.id}: ${dependency.what}`;
-                
-                info.appendChild(stateBadge);
-                info.appendChild(title);
-                
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'text-red-500 hover:text-red-700 ml-2';
-                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                removeBtn.addEventListener('click', () => removeDependency(currentTicketId, dependency.id));
-                
-                item.appendChild(info);
-                item.appendChild(removeBtn);
-                
-                dependenciesList.appendChild(item);
-            });
-        }
-        
-        function renderDependents() {
-            if (!dependentsList) return;
-            
-            if (currentTicketDependents.length === 0) {
-                dependentsList.innerHTML = '';
-                noDependentsMessage.classList.remove('hidden');
-                return;
-            }
-            
-            noDependentsMessage.classList.add('hidden');
-            dependentsList.innerHTML = '';
-            
-            currentTicketDependents.forEach(dependent => {
-                const item = document.createElement('div');
-                item.className = 'flex items-center justify-between py-1 border-b last:border-b-0 border-gray-200';
-                
-                const info = document.createElement('div');
-                info.className = 'flex-grow';
-                
-                // State badge
-                const stateBadge = document.createElement('span');
-                stateBadge.className = `inline-block px-2 py-1 mr-2 text-xs rounded ${getStateClass(dependent.state_name)}`;
-                stateBadge.textContent = dependent.state_name;
-                
-                const title = document.createElement('span');
-                title.className = 'text-sm';
-                title.textContent = `#${dependent.id}: ${dependent.what}`;
-                
-                info.appendChild(stateBadge);
-                info.appendChild(title);
-                
-                item.appendChild(info);
-                
-                dependentsList.appendChild(item);
-            });
-        }
-        
-        function updateDependencyStatus(allResolved) {
-            if (currentTicketDependencies.length === 0) {
-                dependencyStatus.classList.add('hidden');
-                return;
-            }
-            
-            dependencyStatus.classList.remove('hidden');
-            
-            if (allResolved) {
-                dependencyStatus.className = 'p-2 rounded mt-2 bg-green-100 text-green-800';
-                dependencyStatus.innerHTML = '<i class="fas fa-check-circle mr-1"></i> All dependencies are resolved';
-            } else {
-                dependencyStatus.className = 'p-2 rounded mt-2 bg-orange-100 text-orange-800';
-                dependencyStatus.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> Not all dependencies are resolved';
-            }
-        }
-        
-        function handleAddDependency() {
-            const dependencyId = addDependencySelect.value;
-            
-            if (!dependencyId) {
-                showError('Please select a ticket to add as dependency');
-                return;
-            }
-            
-            if (!currentTicketId) {
-                showError('Current ticket ID is missing. Please save the ticket first.');
-                return;
-            }
-            
-            console.log(`Adding dependency ${dependencyId} to ticket ${currentTicketId}`);
-            
-            // Check if this dependency is already added
-            if (currentTicketDependencies.some(dep => dep.id == dependencyId)) {
-                showError('This dependency is already added');
-                return;
-            }
-            
-            fetchJSON(`/dependencies/${currentTicketId}/add/${dependencyId}`, {
-                method: 'POST'
-            })
-                .then(response => {
-                    console.log('Dependency added response:', response);
-                    showSuccessMessage('Dependency added successfully');
-                    
-                    // Reload dependencies to update UI
-                    loadTicketDependencies(currentTicketId);
-                    
-                    // Reset the select dropdown
-                    addDependencySelect.value = '';
-                })
-                .catch(error => {
-                    console.error('Failed to add dependency:', error);
-                    showError('Failed to add dependency: ' + error.message);
-                });
-        }
-        
-        function removeDependency(ticketId, dependencyId) {
-            fetchJSON(`/dependencies/${ticketId}/remove/${dependencyId}`, {
-                method: 'DELETE'
-            })
-                .then(response => {
-                    showSuccessMessage('Dependency removed successfully');
-                    loadTicketDependencies(ticketId);
-                })
-                .catch(error => {
-                    showError('Failed to remove dependency: ' + error.message);
-                });
-        }
+      });
     });
+  }
+
+  // Show error function in case it's missing
+  function showError(message) {
+    const errorElement = document.getElementById("error-message");
+    errorElement.classList.remove(
+      "bg-green-100",
+      "border-green-400",
+      "text-green-700"
+    );
+    errorElement.classList.add("bg-red-100", "border-red-400", "text-red-700");
+
+    // Check if this is an HTML error response
+    if (message.includes("<!DOCTYPE html>") || message.includes("<html")) {
+      errorElement.textContent =
+        "Server responded with an error. Please check the console for details.";
+      console.error("Server HTML error:", message);
+    } else {
+      errorElement.textContent = message;
+    }
+
+    errorElement.classList.remove("hidden");
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      errorElement.classList.add("hidden");
+    }, 5000);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // DOM elements
+    const projectHeader = document.getElementById("project-header");
+    const projectName = document.getElementById("project-name");
+    const projectDescription = document.getElementById("project-description");
+    const projectSelection = document.getElementById("project-selection");
+    const projectSelect = document.getElementById("project-select");
+    const projectSelectForm = document.getElementById("project-select-form");
+    const kanbanBoard = document.getElementById("kanban-board");
+    const emptyState = document.getElementById("empty-state");
+    const newTicketBtn = document.getElementById("new-ticket-btn");
+    const emptyNewTicketBtn = document.getElementById("empty-new-ticket-btn");
+    const ticketModal = document.getElementById("ticket-modal");
+    const modalTitle = document.getElementById("modal-title");
+    const ticketForm = document.getElementById("ticket-form");
+    const ticketId = document.getElementById("ticket-id");
+    const ticketProjectId = document.getElementById("ticket-project-id");
+    const ticketType = document.getElementById("ticket-type");
+    const ticketPriority = document.getElementById("ticket-priority");
+    const ticketWhat = document.getElementById("ticket-what");
+    const ticketWhy = document.getElementById("ticket-why");
+    const ticketAcceptance = document.getElementById("ticket-acceptance");
+    const ticketTestSteps = document.getElementById("ticket-test-steps");
+    const ticketState = document.getElementById("ticket-state");
+    const ticketStateContainer = document.getElementById(
+      "ticket-state-container"
+    );
+    const deleteModal = document.getElementById("delete-modal");
+    const confirmDeleteBtn = document.getElementById("confirm-delete-btn");
+    const attachmentsContainer = document.getElementById(
+      "attachments-container"
+    );
+    const attachmentsList = document.getElementById("attachments-list");
+    const noAttachmentsMessage = document.getElementById(
+      "no-attachments-message"
+    );
+    const fileUpload = document.getElementById("file-upload");
+
+    // Comment-related DOM elements
+    const commentsContainer = document.getElementById("comments-container");
+    const commentsList = document.getElementById("comments-list");
+    const noCommentsMessage = document.getElementById("no-comments-message");
+    const commentInput = document.getElementById("comment-input");
+    const addCommentBtn = document.getElementById("add-comment-btn");
+
+    // Dependency-related DOM elements
+    const dependenciesContainer = document.getElementById(
+      "dependencies-container"
+    );
+    const dependenciesList = document.getElementById("dependencies-list");
+    const noDependenciesMessage = document.getElementById(
+      "no-dependencies-message"
+    );
+    const addDependencySelect = document.getElementById(
+      "add-dependency-select"
+    );
+    const addDependencyBtn = document.getElementById("add-dependency-btn");
+    const dependencyStatus = document.getElementById("dependency-status");
+    const dependentsContainer = document.getElementById("dependents-container");
+    const dependentsList = document.getElementById("dependents-list");
+    const noDependentsMessage = document.getElementById(
+      "no-dependents-message"
+    );
+
+    // Global variables
+    let currentProjectId = null;
+    let ticketTypes = [];
+    let ticketStates = [];
+    let ticketPriorities = [];
+    let draggedTicket = null;
+    let currentTicketAttachments = [];
+    let currentTicketComments = [];
+    let allProjectTickets = [];
+    let currentTicketDependencies = [];
+    let currentTicketDependents = [];
+    let currentTicketId = null;
+
+    // Check for URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectIdParam = urlParams.get("project_id");
+
+    // If a project_id is provided in the URL, hide the project selection and load tickets
+    if (projectIdParam) {
+      const parsedProjectId = parseInt(projectIdParam);
+      currentProjectId = parsedProjectId;
+      document.getElementById("project-selection").classList.add("hidden");
+      document.getElementById("board-view").classList.remove("hidden");
+      document
+        .getElementById("project-title-container")
+        .classList.remove("hidden");
+
+      // Load data
+      Promise.all([
+        loadTicketTypes(),
+        loadTicketStates(),
+        loadTicketPriorities(),
+        loadProject(parsedProjectId),
+        loadTickets(parsedProjectId),
+      ])
+        .then(() => {
+          // Enable the New Ticket button after all data is loaded
+          newTicketBtn.removeAttribute("disabled");
+        })
+        .catch((error) => {
+          showError("Failed to load board data: " + error.message);
+        });
+    } else {
+      // Otherwise, show the project selection form
+      document.getElementById("project-selection").classList.remove("hidden");
+      document.getElementById("board-view").classList.add("hidden");
+      document
+        .getElementById("project-title-container")
+        .classList.add("hidden");
+
+      // Load projects for the dropdown
+      loadProjects();
+    }
+
+    // Add event listeners
+    newTicketBtn.addEventListener("click", () => openTicketModal());
+    emptyNewTicketBtn.addEventListener("click", () => openTicketModal());
+
+    document.querySelectorAll(".modal-close").forEach((btn) => {
+      btn.addEventListener("click", () => closeTicketModal());
+    });
+
+    document.querySelectorAll(".delete-modal-close").forEach((btn) => {
+      btn.addEventListener("click", () => closeDeleteModal());
+    });
+
+    ticketForm.addEventListener("submit", handleTicketSubmit);
+    projectSelectForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const selectedProjectId = projectSelect.value;
+      if (selectedProjectId) {
+        window.location.href = `/tickets/board?project_id=${selectedProjectId}`;
+      }
+    });
+
+    fileUpload.addEventListener("change", handleFileUpload);
+
+    // Add event listeners for the dependency functionality
+    addDependencyBtn.addEventListener("click", handleAddDependency);
+
+    // Functions
+    function loadProject(projectId) {
+      fetchJSON(`/projects/${projectId}`)
+        .then((project) => {
+          projectName.textContent = project.name;
+          projectDescription.textContent =
+            project.description || "No description provided";
+          ticketProjectId.value = project.id;
+        })
+        .catch((error) => {
+          showError("Failed to load project: " + error.message);
+        });
+    }
+
+    function loadProjects() {
+      fetchJSON("/projects/")
+        .then((projects) => {
+          projectSelect.innerHTML =
+            '<option value="">Select a project</option>';
+
+          if (projects && projects.length > 0) {
+            projects.forEach((project) => {
+              const option = document.createElement("option");
+              option.value = project.id;
+              option.textContent = project.name;
+              projectSelect.appendChild(option);
+            });
+          } else {
+            const option = document.createElement("option");
+            option.disabled = true;
+            option.textContent = "No projects available";
+            projectSelect.appendChild(option);
+          }
+        })
+        .catch((error) => {
+          showError("Failed to load projects: " + error.message);
+        });
+    }
+
+    function loadTicketTypes() {
+      return fetchJSON("/tickets/types").then((data) => {
+        ticketTypes = data;
+
+        // Update the ticket type dropdown
+        ticketType.innerHTML = "";
+        data.forEach((type) => {
+          const option = document.createElement("option");
+          option.value = type.id;
+          option.textContent = type.name;
+          ticketType.appendChild(option);
+        });
+      });
+    }
+
+    function loadTicketStates() {
+      return fetchJSON("/tickets/states").then((data) => {
+        ticketStates = data;
+
+        // Update the ticket state dropdown
+        ticketState.innerHTML = "";
+        data.forEach((state) => {
+          const option = document.createElement("option");
+          option.value = state.id;
+          option.textContent = state.name;
+          ticketState.appendChild(option);
+        });
+
+        // Reorder the states to ensure "review" appears before "done" and "on hold" appears between "in progress" and "done"
+        const reorderedStates = [];
+
+        // First add backlog
+        const backlog = data.find((s) => s.name.toLowerCase() === "backlog");
+        if (backlog) reorderedStates.push(backlog);
+
+        // Then add in progress
+        const inProgress = data.find(
+          (s) => s.name.toLowerCase() === "in progress"
+        );
+        if (inProgress) reorderedStates.push(inProgress);
+
+        // Then add review
+        const review = data.find((s) => s.name.toLowerCase() === "review");
+        if (review) reorderedStates.push(review);
+
+        // Then add on hold
+        const onHold = data.find((s) => s.name.toLowerCase() === "on hold");
+        if (onHold) reorderedStates.push(onHold);
+
+        // Then add done
+        const done = data.find((s) => s.name.toLowerCase() === "done");
+        if (done) reorderedStates.push(done);
+
+        // Add any other states that don't match the predefined order
+        data.forEach((state) => {
+          const stateName = state.name.toLowerCase();
+          if (
+            stateName !== "backlog" &&
+            stateName !== "in progress" &&
+            stateName !== "review" &&
+            stateName !== "on hold" &&
+            stateName !== "done"
+          ) {
+            reorderedStates.push(state);
+          }
+        });
+
+        // Create columns based on reordered states
+        createColumns(reorderedStates);
+      });
+    }
+
+    function loadTicketPriorities() {
+      return fetchJSON("/tickets/priorities").then((data) => {
+        ticketPriorities = data;
+
+        // Update the ticket priority dropdown
+        ticketPriority.innerHTML = "";
+
+        // Add empty option for no priority
+        const emptyOption = document.createElement("option");
+        emptyOption.value = "";
+        emptyOption.textContent = "-- Select Priority --";
+        ticketPriority.appendChild(emptyOption);
+
+        // Add all priority options
+        data.forEach((priority) => {
+          const option = document.createElement("option");
+          option.value = priority.id;
+          option.textContent = priority.name;
+          ticketPriority.appendChild(option);
+        });
+      });
+    }
+
+    function createColumns(states) {
+      kanbanBoard.innerHTML = "";
+
+      // Filter out the 'archived' state
+      const filteredStates = states.filter(
+        (state) => state.name.toLowerCase() !== "archived"
+      );
+
+      filteredStates.forEach((state) => {
+        const column = document.createElement("div");
+        column.className = "bg-gray-100 rounded-lg p-3 kanban-column";
+        column.dataset.stateId = state.id;
+
+        // Add drop event listeners to the column
+        column.addEventListener("dragover", handleDragOver);
+        column.addEventListener("dragenter", handleDragEnter);
+        column.addEventListener("dragleave", handleDragLeave);
+        column.addEventListener("drop", handleDrop);
+
+        const header = document.createElement("div");
+        header.className =
+          "flex justify-between items-center mb-3 pb-1 border-b border-gray-300";
+
+        const title = document.createElement("h3");
+        title.className = "font-bold text-md capitalize";
+        title.textContent = state.name;
+
+        const counter = document.createElement("span");
+        counter.className =
+          "text-gray-500 text-xs bg-white px-2 py-1 rounded-full";
+        counter.textContent = "0";
+        counter.id = `counter-${state.id}`;
+
+        header.appendChild(title);
+        header.appendChild(counter);
+
+        const ticketsContainer = document.createElement("div");
+        ticketsContainer.className = "tickets-container space-y-2";
+        ticketsContainer.dataset.stateId = state.id;
+
+        // Add drop event listeners to the tickets container too
+        ticketsContainer.addEventListener("dragover", handleDragOver);
+        ticketsContainer.addEventListener("dragenter", handleDragEnter);
+        ticketsContainer.addEventListener("dragleave", handleDragLeave);
+        ticketsContainer.addEventListener("drop", handleDrop);
+
+        column.appendChild(header);
+        column.appendChild(ticketsContainer);
+
+        kanbanBoard.appendChild(column);
+      });
+    }
+
+    function loadTickets(projectId) {
+      if (!projectId) return;
+
+      console.log(`Loading tickets for project ${projectId}`);
+      fetchJSON(`/tickets/?project_id=${projectId}`)
+        .then((tickets) => {
+          // Clear all ticket containers
+          document
+            .querySelectorAll(".tickets-container")
+            .forEach((container) => {
+              container.innerHTML = "";
+            });
+
+          if (tickets && tickets.length > 0) {
+            console.log(`Loaded ${tickets.length} tickets`);
+            kanbanBoard.classList.remove("hidden");
+            emptyState.classList.add("hidden");
+
+            // Group tickets by state
+            const ticketsByState = {};
+            tickets.forEach((ticket) => {
+              if (!ticketsByState[ticket.state]) {
+                ticketsByState[ticket.state] = [];
+              }
+              ticketsByState[ticket.state].push(ticket);
+            });
+
+            // Add tickets to their respective columns
+            Object.keys(ticketsByState).forEach((stateId) => {
+              const container = document.querySelector(
+                `.tickets-container[data-state-id="${stateId}"]`
+              );
+              if (container) {
+                // Update counter
+                const counter = document.querySelector(`#counter-${stateId}`);
+                if (counter) {
+                  counter.textContent = ticketsByState[stateId].length;
+                }
+
+                // Add ticket cards
+                ticketsByState[stateId].forEach((ticket) => {
+                  container.appendChild(createTicketCard(ticket));
+                });
+              }
+            });
+          } else {
+            console.log("No tickets found");
+            kanbanBoard.classList.add("hidden");
+            emptyState.classList.remove("hidden");
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading tickets:", error);
+          showError("Failed to load tickets: " + error.message);
+        });
+    }
+
+    function createTicketCard(ticket) {
+      const card = document.createElement("div");
+      card.className = "bg-white rounded-lg shadow-md p-3 ticket-card";
+      card.dataset.id = ticket.id;
+      card.dataset.state = ticket.state;
+
+      // Add classes based on dependencies status
+      if (ticket.dependencies && ticket.dependencies.length > 0) {
+        if (!ticket.all_dependencies_resolved) {
+          card.classList.add("border-l-4", "border-orange-500");
+        } else {
+          card.classList.add("border-l-4", "border-green-500");
+        }
+      }
+
+      // Make the card draggable
+      card.draggable = true;
+
+      // Add drag event listeners
+      card.addEventListener("dragstart", handleDragStart);
+      card.addEventListener("dragend", handleDragEnd);
+
+      // Add click event for editing the ticket (not moving)
+      card.addEventListener("click", function (e) {
+        // Don't trigger if clicking on a button or link inside the card
+        if (
+          e.target.tagName === "BUTTON" ||
+          e.target.tagName === "A" ||
+          e.target.closest("button") ||
+          e.target.closest("a")
+        ) {
+          return;
+        }
+
+        // Instead of handling movement, open the ticket for editing
+        openTicketModal(ticket);
+      });
+
+      // Add visual cue this is draggable
+      card.title = "Drag to move this ticket";
+
+      const header = document.createElement("div");
+      header.className = "flex justify-between items-start mb-1";
+
+      const type = document.createElement("span");
+      const typeName = ticket.type_name || getTypeNameById(ticket.type);
+      type.className = `px-2 py-0.5 rounded text-xs font-semibold ${getTypeClass(
+        typeName
+      )}`;
+      type.textContent = typeName;
+
+      const actions = document.createElement("div");
+      actions.className = "flex space-x-1";
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "text-gray-500 hover:text-gray-700";
+      editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+      editBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent the card click handler from firing
+        openTicketModal(ticket);
+      });
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "text-gray-500 hover:text-red-700";
+      deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+      deleteBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent the card click handler from firing
+        openDeleteModal(ticket.id);
+      });
+
+      actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
+
+      header.appendChild(type);
+      header.appendChild(actions);
+
+      // Ticket number (ID) badge
+      const idBadge = document.createElement("span");
+      idBadge.className =
+        "ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono";
+      idBadge.textContent = `#${ticket.id}`;
+      header.appendChild(idBadge);
+
+      const what = document.createElement("p");
+      what.className = "font-semibold mb-2";
+      what.textContent = ticket.what;
+
+      // Add priority badge if present
+      if (ticket.priority) {
+        const priorityBadge = document.createElement("div");
+        priorityBadge.className = `text-xs inline-block my-1 py-1 px-2 rounded ${getPriorityClass(
+          ticket.priority_name
+        )}`;
+        priorityBadge.textContent = `Priority: ${ticket.priority_name}`;
+        what.appendChild(document.createElement("br"));
+        what.appendChild(priorityBadge);
+      }
+
+      // Add dependency badges if present
+      if (ticket.dependencies && ticket.dependencies.length > 0) {
+        const dependencyBadge = document.createElement("div");
+        dependencyBadge.className =
+          "text-xs inline-block my-1 py-1 px-2 rounded";
+
+        if (!ticket.all_dependencies_resolved) {
+          dependencyBadge.className += " bg-orange-100 text-orange-800";
+          dependencyBadge.textContent = `Dependencies: ${ticket.dependencies.length} (Not all resolved)`;
+        } else {
+          dependencyBadge.className += " bg-green-100 text-green-800";
+          dependencyBadge.textContent = `Dependencies: ${ticket.dependencies.length} (All resolved)`;
+        }
+
+        what.appendChild(document.createElement("br"));
+        what.appendChild(dependencyBadge);
+      }
+
+      let additionalInfo = "";
+      if (ticket.why) {
+        additionalInfo += `<div class="mb-1"><span class="font-semibold text-gray-600">Why:</span> ${ticket.why}</div>`;
+      }
+      // Acceptance and Test Steps are intentionally omitted from the summary card
+
+      const details = document.createElement("div");
+      details.className = "text-sm text-gray-600 overflow-hidden";
+      details.innerHTML = additionalInfo;
+
+      const dates = document.createElement("div");
+      dates.className = "text-xs text-gray-500 mt-3 flex justify-between";
+      dates.innerHTML = `<span>Created: ${new Date(
+        ticket.created_date
+      ).toLocaleDateString()}</span>`;
+
+      if (ticket.completed_date) {
+        dates.innerHTML += `<span>Completed: ${new Date(
+          ticket.completed_date
+        ).toLocaleDateString()}</span>`;
+      }
+
+      card.appendChild(header);
+      card.appendChild(what);
+
+      if (additionalInfo) {
+        card.appendChild(details);
+      }
+
+      // Add attachments if any
+      if (ticket.attachments && ticket.attachments.length > 0) {
+        const attachmentsDiv = document.createElement("div");
+        attachmentsDiv.className = "attachment-list text-xs text-gray-600";
+
+        const attachmentLabel = document.createElement("div");
+        attachmentLabel.className = "font-semibold mb-1";
+        attachmentLabel.innerHTML =
+          '<i class="fas fa-paperclip mr-1"></i> Attachments:';
+        attachmentsDiv.appendChild(attachmentLabel);
+
+        const attachmentCount = Math.min(ticket.attachments.length, 2); // Show max 2 in card
+        for (let i = 0; i < attachmentCount; i++) {
+          const attachment = ticket.attachments[i];
+          const attachmentItem = document.createElement("div");
+          attachmentItem.className = "truncate";
+          attachmentItem.innerHTML = `<a href="/attachments/${attachment.id}" class="text-indigo-600 hover:underline" target="_blank" title="${attachment.filename}">${attachment.filename}</a>`;
+          attachmentsDiv.appendChild(attachmentItem);
+        }
+
+        if (ticket.attachments.length > 2) {
+          const moreItem = document.createElement("div");
+          moreItem.className = "text-gray-500 italic";
+          moreItem.textContent = `+${ticket.attachments.length - 2} more...`;
+          attachmentsDiv.appendChild(moreItem);
+        }
+
+        card.appendChild(attachmentsDiv);
+      }
+
+      card.appendChild(dates);
+
+      return card;
+    }
+
+    function getTypeNameById(typeId) {
+      const type = ticketTypes.find((t) => t.id === typeId);
+      return type ? type.name : "unknown";
+    }
+
+    function getTypeClass(typeName) {
+      switch (typeName.toLowerCase()) {
+        case "bug":
+          return "bg-red-100 text-red-800";
+        case "story":
+          return "bg-green-100 text-green-800";
+        case "spike":
+          return "bg-purple-100 text-purple-800";
+        default:
+          return "bg-gray-100 text-gray-800";
+      }
+    }
+
+    function getPriorityClass(priority) {
+      if (!priority) return "";
+
+      switch (priority.toLowerCase()) {
+        case "critical":
+          return "bg-red-100 text-red-800";
+        case "high":
+          return "bg-orange-100 text-orange-800";
+        case "medium":
+          return "bg-yellow-100 text-yellow-800";
+        case "low":
+          return "bg-green-100 text-green-800";
+        default:
+          return "bg-gray-100 text-gray-800";
+      }
+    }
+
+    function getStateClass(state) {
+      if (!state) return "bg-gray-100 text-gray-800";
+
+      switch (state.toLowerCase()) {
+        case "backlog":
+          return "bg-gray-100 text-gray-800";
+        case "ready":
+          return "bg-blue-100 text-blue-800";
+        case "in progress":
+          return "bg-yellow-100 text-yellow-800";
+        case "on hold":
+          return "bg-amber-100 text-amber-800";
+        case "done":
+          return "bg-green-100 text-green-800";
+        default:
+          return "bg-gray-100 text-gray-800";
+      }
+    }
+
+    function getPriorityNameById(priorityId) {
+      if (!priorityId) return null;
+      const priority = ticketPriorities.find(
+        (p) => p.id === parseInt(priorityId)
+      );
+      return priority ? priority.name : null;
+    }
+
+    function openTicketModal(ticket = null) {
+      ticketForm.reset();
+
+      if (ticket) {
+        currentTicketId = ticket.id;
+        modalTitle.textContent = "Edit Ticket";
+        ticketId.value = ticket.id;
+        ticketProjectId.value = ticket.project_id;
+        ticketType.value = ticket.type;
+        ticketPriority.value = ticket.priority || "";
+        ticketWhat.value = ticket.what;
+        ticketWhy.value = ticket.why || "";
+        ticketAcceptance.value = ticket.acceptance_criteria || "";
+        ticketTestSteps.value = ticket.test_steps || "";
+        ticketState.value = ticket.state;
+        ticketStateContainer.classList.remove("hidden");
+
+        // Show attachments container and load existing attachments
+        attachmentsContainer.classList.remove("hidden");
+        loadTicketAttachments(ticket.id);
+
+        // Show comments container and load existing comments
+        commentsContainer.classList.remove("hidden");
+        loadTicketComments(ticket.id);
+
+        // Show dependencies containers and load dependencies
+        dependenciesContainer.classList.remove("hidden");
+        dependentsContainer.classList.remove("hidden");
+
+        // If ticket already has dependencies in the data, set them directly
+        if (ticket.dependencies && ticket.dependencies.length > 0) {
+          currentTicketDependencies = ticket.dependencies;
+          renderDependencies();
+        }
+
+        // If ticket already has dependents in the data, set them directly
+        if (ticket.dependents && ticket.dependents.length > 0) {
+          currentTicketDependents = ticket.dependents;
+          renderDependents();
+        }
+
+        // Update dependency status if we have the data
+        if (typeof ticket.all_dependencies_resolved !== "undefined") {
+          updateDependencyStatus(ticket.all_dependencies_resolved);
+        }
+
+        // Always load fresh dependencies data from the server
+        loadTicketDependencies(ticket.id);
+
+        // Load all project tickets for dependency selection (except current one)
+        loadProjectTicketsForDependencies(ticket.project_id, ticket.id);
+      } else {
+        currentTicketId = null;
+        modalTitle.textContent = "New Ticket";
+        ticketId.value = "";
+        ticketProjectId.value = currentProjectId;
+
+        // Get the backlog state for new tickets
+        const backlogState = ticketStates.find(
+          (state) => state.name.toLowerCase() === "backlog"
+        );
+        if (backlogState) {
+          ticketState.value = backlogState.id;
+        }
+
+        // Hide state selection, attachments, comments, and dependencies for new tickets
+        ticketStateContainer.classList.add("hidden");
+        attachmentsContainer.classList.add("hidden");
+        commentsContainer.classList.add("hidden");
+        dependenciesContainer.classList.add("hidden");
+        dependentsContainer.classList.add("hidden");
+
+        // Clear state variables
+        currentTicketAttachments = [];
+        currentTicketComments = [];
+        currentTicketDependencies = [];
+        currentTicketDependents = [];
+        renderAttachments();
+        renderComments();
+        renderDependencies();
+        renderDependents();
+      }
+
+      ticketModal.classList.remove("hidden");
+    }
+
+    function closeTicketModal() {
+      ticketModal.classList.add("hidden");
+      // Clear current ticket ID to avoid confusion in future operations
+      currentTicketId = null;
+    }
+
+    function openDeleteModal(ticketId) {
+      confirmDeleteBtn.dataset.id = ticketId;
+      deleteModal.classList.remove("hidden");
+
+      confirmDeleteBtn.addEventListener("click", handleTicketDelete);
+    }
+
+    function closeDeleteModal() {
+      deleteModal.classList.add("hidden");
+      confirmDeleteBtn.removeEventListener("click", handleTicketDelete);
+    }
+
+    function handleTicketSubmit(e) {
+      e.preventDefault();
+
+      const id = ticketId.value;
+      const ticketData = {
+        project_id: parseInt(ticketProjectId.value),
+        type: parseInt(ticketType.value),
+        priority: parseInt(ticketPriority.value),
+        what: ticketWhat.value,
+        why: ticketWhy.value,
+        acceptance_criteria: ticketAcceptance.value,
+        test_steps: ticketTestSteps.value,
+        state: parseInt(ticketState.value),
+      };
+
+      let url = "/tickets/";
+      let method = "POST";
+
+      if (id) {
+        url = `/tickets/${id}`;
+        method = "PUT";
+      }
+
+      fetchJSON(url, {
+        method,
+        body: JSON.stringify(ticketData),
+      })
+        .then(() => {
+          // After saving the ticket, if there are dependencies and we have a ticket ID,
+          // make sure they are properly saved as well
+          if (
+            id &&
+            currentTicketDependencies &&
+            currentTicketDependencies.length > 0
+          ) {
+            // Process each dependency to ensure it's properly saved
+            const dependenciesToProcess = [...currentTicketDependencies]; // Make a copy to avoid issues with async operations
+
+            // Create a promise for each dependency to be processed
+            const dependencyPromises = dependenciesToProcess.map(
+              (dependency) => {
+                return fetchJSON(`/dependencies/${id}/add/${dependency.id}`, {
+                  method: "POST",
+                }).catch((error) => {
+                  console.error(
+                    `Error saving dependency ${dependency.id}: ${error.message}`
+                  );
+                });
+              }
+            );
+
+            // Wait for all dependency operations to complete
+            return Promise.all(dependencyPromises).then(() => {
+              closeTicketModal();
+              loadTickets(currentProjectId);
+            });
+          } else {
+            closeTicketModal();
+            loadTickets(currentProjectId);
+          }
+        })
+        .catch((error) => {
+          showError("Failed to save ticket: " + error.message);
+        });
+    }
+
+    function handleTicketDelete() {
+      const ticketId = confirmDeleteBtn.dataset.id;
+
+      fetchJSON(`/tickets/${ticketId}`, {
+        method: "DELETE",
+      })
+        .then(() => {
+          closeDeleteModal();
+          loadTickets(currentProjectId);
+        })
+        .catch((error) => {
+          showError("Failed to delete ticket: " + error.message);
+        });
+    }
+
+    // Remove all the old drag and drop handlers and replace with:
+    let selectedTicket = null;
+    let selectedColumn = null;
+
+    function handleDragStart(e) {
+      // Store the dragged ticket
+      draggedTicket = this;
+
+      // Set data transfer
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", this.dataset.id);
+
+      // Add styling class
+      setTimeout(() => this.classList.add("dragging"), 0);
+
+      // Highlight columns this ticket can be moved to
+      highlightDropTargets();
+    }
+
+    function handleDragEnd(e) {
+      // Remove styling class
+      this.classList.remove("dragging");
+
+      // Remove highlights from all columns
+      document.querySelectorAll(".kanban-column").forEach((column) => {
+        column.classList.remove("highlight");
+      });
+
+      draggedTicket = null;
+    }
+
+    function handleDragOver(e) {
+      // Prevent default to allow drop
+      e.preventDefault();
+      return false;
+    }
+
+    function handleDragEnter(e) {
+      // Add highlight class
+      if (
+        this.classList.contains("kanban-column") ||
+        this.classList.contains("tickets-container")
+      ) {
+        // Only highlight if this is a different column than the ticket's current one
+        const columnStateId =
+          this.dataset.stateId || this.parentElement.dataset.stateId;
+        if (columnStateId !== draggedTicket.dataset.state) {
+          (this.classList.contains("kanban-column")
+            ? this
+            : this.parentElement
+          ).classList.add("highlight");
+        }
+      }
+    }
+
+    function handleDragLeave(e) {
+      // Remove highlight class
+      if (this.classList.contains("kanban-column")) {
+        this.classList.remove("highlight");
+      } else if (this.classList.contains("tickets-container")) {
+        this.parentElement.classList.remove("highlight");
+      }
+    }
+
+    function handleDrop(e) {
+      // Prevent default action
+      e.preventDefault();
+
+      // Get the target column/container
+      let targetContainer;
+      if (this.classList.contains("kanban-column")) {
+        // If dropped on column, use its tickets container
+        targetContainer = this.querySelector(".tickets-container");
+      } else if (this.classList.contains("tickets-container")) {
+        // If dropped directly on tickets container, use it
+        targetContainer = this;
+      } else {
+        // Not a valid drop target
+        return false;
+      }
+
+      // Get the ticket ID and target state ID
+      const ticketId = parseInt(e.dataTransfer.getData("text/plain"));
+      const newStateId = parseInt(targetContainer.dataset.stateId);
+      const ticketCard = document.querySelector(
+        `.ticket-card[data-id="${ticketId}"]`
+      );
+      const currentStateId = parseInt(ticketCard.dataset.state);
+
+      // Don't do anything if the ticket is already in this column
+      if (currentStateId === newStateId) {
+        return false;
+      }
+
+      // Move the ticket
+      moveTicketToColumn(ticketCard, targetContainer);
+
+      return false;
+    }
+
+    function highlightDropTargets() {
+      if (!draggedTicket) return;
+
+      document.querySelectorAll(".kanban-column").forEach((column) => {
+        const columnStateId = column.dataset.stateId;
+
+        // Don't highlight the column the ticket is already in
+        if (columnStateId !== draggedTicket.dataset.state) {
+          column.classList.add("highlight");
+        }
+      });
+    }
+
+    function moveTicketToColumn(ticket, ticketsContainer) {
+      const ticketId = parseInt(ticket.dataset.id);
+      const newStateId = parseInt(ticketsContainer.dataset.stateId);
+      const currentStateId = parseInt(ticket.dataset.state);
+
+      // Don't do anything if the ticket is already in this column
+      if (currentStateId === newStateId) {
+        return;
+      }
+
+      console.log(
+        `Moving ticket ${ticketId} from state ${currentStateId} to state ${newStateId}`
+      );
+
+      // Add visual indication that update is in progress
+      ticket.classList.add("updating");
+
+      // Clone the ticket for animation purposes
+      const ticketClone = ticket.cloneNode(true);
+      ticketClone.style.position = "absolute";
+      ticketClone.style.zIndex = "1000";
+      ticketClone.style.width = ticket.offsetWidth + "px";
+      document.body.appendChild(ticketClone);
+
+      // Position the clone over the original
+      const ticketRect = ticket.getBoundingClientRect();
+      ticketClone.style.top = ticketRect.top + window.scrollY + "px";
+      ticketClone.style.left = ticketRect.left + "px";
+
+      // First, immediately move the ticket to the new column for instant feedback
+      ticketsContainer.appendChild(ticket);
+
+      // Update ticket's state attribute
+      ticket.dataset.state = newStateId;
+
+      // Add moving animation
+      ticket.classList.add("ticket-moving");
+
+      setTimeout(() => {
+        ticket.classList.remove("ticket-moving");
+      }, 300);
+
+      // Update counters
+      const oldCounter = document.getElementById(`counter-${currentStateId}`);
+      const newCounter = document.getElementById(`counter-${newStateId}`);
+
+      if (oldCounter) {
+        oldCounter.textContent = parseInt(oldCounter.textContent) - 1;
+      }
+
+      if (newCounter) {
+        newCounter.textContent = parseInt(newCounter.textContent) + 1;
+      }
+
+      // Clean up the clone
+      document.body.removeChild(ticketClone);
+
+      // Send the update to the server
+      fetch(`/tickets/${ticketId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ state: newStateId }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            return response.text().then((text) => {
+              throw new Error(`Server error: ${text}`);
+            });
+          }
+          return response.text().then((text) => (text ? JSON.parse(text) : {}));
+        })
+        .then((data) => {
+          console.log("Ticket state updated successfully", data);
+          ticket.classList.remove("updating");
+          showSuccessMessage(`Ticket moved to ${getStateNameById(newStateId)}`);
+        })
+        .catch((error) => {
+          console.error("Error updating ticket state:", error);
+          ticket.classList.remove("updating");
+
+          // Move the ticket back to its original column on error
+          const originalContainer = document.querySelector(
+            `.tickets-container[data-state-id="${currentStateId}"]`
+          );
+          if (originalContainer && ticket.parentNode !== originalContainer) {
+            originalContainer.appendChild(ticket);
+
+            // Update ticket's state attribute back
+            ticket.dataset.state = currentStateId;
+
+            // Update counters back
+            if (oldCounter) {
+              oldCounter.textContent = parseInt(oldCounter.textContent) + 1;
+            }
+
+            if (newCounter) {
+              newCounter.textContent = parseInt(newCounter.textContent) - 1;
+            }
+          }
+
+          showError(`Failed to update ticket state: ${error.message}`);
+        });
+    }
+
+    function loadTicketAttachments(ticketId) {
+      if (!ticketId) return;
+
+      fetchJSON(`/attachments/ticket/${ticketId}`)
+        .then((attachments) => {
+          currentTicketAttachments = attachments;
+          renderAttachments();
+        })
+        .catch((error) => {
+          console.error("Failed to load attachments:", error);
+          currentTicketAttachments = [];
+          renderAttachments();
+        });
+    }
+
+    function renderAttachments() {
+      // Clear previous attachments
+      while (attachmentsList.firstChild !== noAttachmentsMessage) {
+        if (attachmentsList.lastChild !== noAttachmentsMessage) {
+          attachmentsList.removeChild(attachmentsList.lastChild);
+        } else {
+          break;
+        }
+      }
+
+      if (currentTicketAttachments.length === 0) {
+        noAttachmentsMessage.classList.remove("hidden");
+        return;
+      }
+
+      noAttachmentsMessage.classList.add("hidden");
+
+      // Add each attachment to the list
+      currentTicketAttachments.forEach((attachment) => {
+        const attachmentItem = document.createElement("div");
+        attachmentItem.className = "attachment-item text-sm";
+
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "attachment-name";
+        nameSpan.textContent = attachment.filename;
+
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "flex space-x-2";
+
+        const downloadLink = document.createElement("a");
+        downloadLink.href = `/attachments/${attachment.id}`;
+        downloadLink.className = "text-indigo-600 hover:text-indigo-800";
+        downloadLink.target = "_blank";
+        downloadLink.innerHTML = '<i class="fas fa-download"></i>';
+        downloadLink.title = "Download file";
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "text-red-600 hover:text-red-800";
+        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+        deleteBtn.title = "Delete attachment";
+        deleteBtn.addEventListener("click", () =>
+          deleteAttachment(attachment.id)
+        );
+
+        actionsDiv.appendChild(downloadLink);
+        actionsDiv.appendChild(deleteBtn);
+
+        attachmentItem.appendChild(nameSpan);
+        attachmentItem.appendChild(actionsDiv);
+
+        attachmentsList.appendChild(attachmentItem);
+      });
+    }
+
+    function handleFileUpload() {
+      const file = fileUpload.files[0];
+      if (!file) return;
+
+      const currentTicketId = ticketId.value;
+      if (!currentTicketId) {
+        alert("Please save the ticket first before adding attachments");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Show loading state
+      const tempId = Date.now();
+      currentTicketAttachments.push({
+        id: `temp-${tempId}`,
+        filename: file.name + " (Uploading...)",
+        isUploading: true,
+      });
+      renderAttachments();
+
+      // Upload file
+      fetch(`/attachments/ticket/${currentTicketId}`, {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Upload failed");
+          }
+          return response.json();
+        })
+        .then((attachment) => {
+          // Remove temp item and add real attachment
+          currentTicketAttachments = currentTicketAttachments
+            .filter((a) => a.id !== `temp-${tempId}`)
+            .concat(attachment);
+          renderAttachments();
+
+          // Reset file input
+          fileUpload.value = "";
+        })
+        .catch((error) => {
+          console.error("Error uploading file:", error);
+          alert("Failed to upload file: " + error.message);
+
+          // Remove temp item
+          currentTicketAttachments = currentTicketAttachments.filter(
+            (a) => a.id !== `temp-${tempId}`
+          );
+          renderAttachments();
+
+          // Reset file input
+          fileUpload.value = "";
+        });
+    }
+
+    function deleteAttachment(attachmentId) {
+      if (confirm("Are you sure you want to delete this attachment?")) {
+        fetchJSON(`/attachments/${attachmentId}`, { method: "DELETE" })
+          .then(() => {
+            currentTicketAttachments = currentTicketAttachments.filter(
+              (a) => a.id !== attachmentId
+            );
+            renderAttachments();
+          })
+          .catch((error) => {
+            console.error("Error deleting attachment:", error);
+            alert("Failed to delete attachment: " + error.message);
+          });
+      }
+    }
+
+    // Add a state name helper function
+    function getStateNameById(stateId) {
+      const state = ticketStates.find((s) => s.id === parseInt(stateId));
+      return state ? state.name : "unknown";
+    }
+
+    // Add a success message function
+    function showSuccessMessage(message) {
+      const errorElement = document.getElementById("error-message");
+      if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.classList.remove("hidden");
+        errorElement.classList.remove(
+          "bg-red-100",
+          "border-red-400",
+          "text-red-700"
+        );
+        errorElement.classList.add(
+          "bg-green-100",
+          "border-green-400",
+          "text-green-700"
+        );
+
+        // Auto-hide after 2 seconds
+        setTimeout(() => {
+          errorElement.classList.add("hidden");
+          // Reset back to error styles for future errors
+          errorElement.classList.add(
+            "bg-red-100",
+            "border-red-400",
+            "text-red-700"
+          );
+          errorElement.classList.remove(
+            "bg-green-100",
+            "border-green-400",
+            "text-green-700"
+          );
+        }, 2000);
+      } else {
+        console.log(message);
+      }
+    }
+
+    function loadTicketComments(ticketId) {
+      if (!ticketId) return;
+
+      // Clear existing comments
+      commentsList.innerHTML = "";
+      currentTicketComments = [];
+
+      fetchJSON(`/api/v1/tickets/${ticketId}/comments`)
+        .then((comments) => {
+          currentTicketComments = comments;
+          renderComments();
+        })
+        .catch((error) => {
+          console.error("Error loading comments:", error);
+          showError("Failed to load comments: " + error.message);
+        });
+    }
+
+    function renderComments() {
+      // Clear previous comments
+      commentsList.innerHTML = "";
+
+      if (currentTicketComments.length === 0) {
+        noCommentsMessage.classList.remove("hidden");
+        return;
+      }
+
+      noCommentsMessage.classList.add("hidden");
+
+      // Add each comment to the list
+      currentTicketComments.forEach((comment) => {
+        const commentItem = document.createElement("div");
+        commentItem.className = "bg-gray-50 rounded-lg p-3";
+        commentItem.dataset.commentId = comment.id;
+
+        const content = document.createElement("p");
+        content.className = "text-sm text-gray-700";
+        content.textContent = comment.content;
+
+        const metadata = document.createElement("div");
+        metadata.className =
+          "text-xs text-gray-500 mt-2 flex justify-between items-center";
+
+        const date = new Date(comment.created_date).toLocaleString();
+        metadata.innerHTML = `<span>${date}</span>`;
+
+        const actions = document.createElement("div");
+        actions.className = "flex space-x-2";
+
+        const editBtn = document.createElement("button");
+        editBtn.className = "text-indigo-600 hover:text-indigo-800";
+        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        editBtn.title = "Edit comment";
+        editBtn.addEventListener("click", () => editComment(comment.id));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "text-red-600 hover:text-red-800";
+        deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+        deleteBtn.title = "Delete comment";
+        deleteBtn.addEventListener("click", () => deleteComment(comment.id));
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+
+        metadata.appendChild(actions);
+
+        commentItem.appendChild(content);
+        commentItem.appendChild(metadata);
+
+        commentsList.appendChild(commentItem);
+      });
+    }
+
+    function handleAddComment() {
+      const content = commentInput.value.trim();
+
+      if (!content) return;
+
+      const currentTicketId = ticketId.value;
+      if (!currentTicketId) {
+        alert("Please save the ticket first before adding comments");
+        return;
+      }
+
+      fetchJSON(`/api/v1/tickets/${currentTicketId}/comments`, {
+        method: "POST",
+        body: JSON.stringify({ content }),
+      })
+        .then((comment) => {
+          currentTicketComments.push(comment);
+          renderComments();
+          commentInput.value = "";
+        })
+        .catch((error) => {
+          console.error("Error adding comment:", error);
+          showError("Failed to add comment: " + error.message);
+        });
+    }
+
+    function editComment(commentId) {
+      const comment = currentTicketComments.find((c) => c.id === commentId);
+      if (!comment) return;
+
+      const commentItem = document.querySelector(
+        `[data-comment-id="${commentId}"]`
+      );
+      if (!commentItem) return;
+
+      const content = prompt("Edit comment:", comment.content);
+      if (content === null || content.trim() === "") return;
+
+      fetchJSON(`/api/v1/comments/${commentId}`, {
+        method: "PUT",
+        body: JSON.stringify({ content: content.trim() }),
+      })
+        .then((updatedComment) => {
+          const index = currentTicketComments.findIndex(
+            (c) => c.id === commentId
+          );
+          if (index !== -1) {
+            currentTicketComments[index] = updatedComment;
+            renderComments();
+          }
+        })
+        .catch((error) => {
+          console.error("Error updating comment:", error);
+          showError("Failed to update comment: " + error.message);
+        });
+    }
+
+    function deleteComment(commentId) {
+      if (!confirm("Are you sure you want to delete this comment?")) return;
+
+      fetchJSON(`/api/v1/comments/${commentId}`, { method: "DELETE" })
+        .then(() => {
+          currentTicketComments = currentTicketComments.filter(
+            (c) => c.id !== commentId
+          );
+          renderComments();
+        })
+        .catch((error) => {
+          console.error("Error deleting comment:", error);
+          showError("Failed to delete comment: " + error.message);
+        });
+    }
+
+    // Add event listener for the add comment button
+    document
+      .getElementById("add-comment-btn")
+      .addEventListener("click", handleAddComment);
+
+    // Dependency Management Functions
+    function loadProjectTicketsForDependencies(projectId, currentTicketId) {
+      if (!projectId) return;
+
+      fetchJSON(`/tickets/?project_id=${projectId}`)
+        .then((tickets) => {
+          // Store all tickets for reference
+          allProjectTickets = tickets;
+
+          // Clear dependency select and add default option
+          addDependencySelect.innerHTML =
+            '<option value="">-- Select Ticket --</option>';
+
+          // Add options for each ticket except current one
+          tickets.forEach((ticket) => {
+            if (ticket.id != currentTicketId) {
+              const option = document.createElement("option");
+              option.value = ticket.id;
+              option.textContent = `#${ticket.id}: ${ticket.what}`;
+              addDependencySelect.appendChild(option);
+            }
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to load project tickets:", error);
+          showError("Failed to load project tickets: " + error.message);
+        });
+    }
+
+    function loadTicketDependencies(ticketId) {
+      if (!ticketId) {
+        console.warn("No ticket ID provided to loadTicketDependencies");
+        return Promise.resolve();
+      }
+
+      // Store the ticket ID for reference
+      currentTicketId = ticketId;
+
+      console.log(`Loading dependencies for ticket ${ticketId}`);
+
+      // Show dependency-related UI sections
+      dependenciesContainer.classList.remove("hidden");
+      dependentsContainer.classList.remove("hidden");
+
+      return fetchJSON(`/dependencies/${ticketId}`)
+        .then((data) => {
+          console.log("Dependencies loaded:", data);
+
+          currentTicketDependencies = data.dependencies || [];
+          currentTicketDependents = data.dependents || [];
+
+          // Make sure we save the full dependency objects for later use
+          currentTicketDependencies = currentTicketDependencies.map((dep) => ({
+            id: dep.id,
+            what: dep.what,
+            state: dep.state,
+            state_name: dep.state_name,
+          }));
+
+          renderDependencies();
+          renderDependents();
+
+          // Update dependency status if all dependencies have state = 'done'
+          const doneState = ticketStates.find(
+            (s) => s.name.toLowerCase() === "done"
+          );
+          const doneStateId = doneState ? doneState.id : null;
+          const allDone =
+            currentTicketDependencies.length === 0 ||
+            (doneStateId !== null &&
+              currentTicketDependencies.every(
+                (dep) => dep.state == doneStateId
+              ));
+          updateDependencyStatus(allDone);
+        })
+        .catch((error) => {
+          console.error("Failed to load dependencies:", error);
+          showError("Failed to load dependencies: " + error.message);
+          return Promise.reject(error);
+        });
+    }
+
+    function renderDependencies() {
+      if (!dependenciesList) return;
+
+      if (currentTicketDependencies.length === 0) {
+        dependenciesList.innerHTML = "";
+        noDependenciesMessage.classList.remove("hidden");
+        return;
+      }
+
+      noDependenciesMessage.classList.add("hidden");
+      dependenciesList.innerHTML = "";
+
+      currentTicketDependencies.forEach((dependency) => {
+        const item = document.createElement("div");
+        item.className =
+          "flex items-center justify-between py-1 border-b last:border-b-0 border-gray-200";
+
+        const info = document.createElement("div");
+        info.className = "flex-grow";
+
+        // State badge
+        const stateBadge = document.createElement("span");
+        stateBadge.className = `inline-block px-2 py-1 mr-2 text-xs rounded ${getStateClass(
+          dependency.state_name
+        )}`;
+        stateBadge.textContent = dependency.state_name;
+
+        const title = document.createElement("span");
+        title.className = "text-sm";
+        title.textContent = `#${dependency.id}: ${dependency.what}`;
+
+        info.appendChild(stateBadge);
+        info.appendChild(title);
+
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "text-red-500 hover:text-red-700 ml-2";
+        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        removeBtn.addEventListener("click", () =>
+          removeDependency(currentTicketId, dependency.id)
+        );
+
+        item.appendChild(info);
+        item.appendChild(removeBtn);
+
+        dependenciesList.appendChild(item);
+      });
+    }
+
+    function renderDependents() {
+      if (!dependentsList) return;
+
+      if (currentTicketDependents.length === 0) {
+        dependentsList.innerHTML = "";
+        noDependentsMessage.classList.remove("hidden");
+        return;
+      }
+
+      noDependentsMessage.classList.add("hidden");
+      dependentsList.innerHTML = "";
+
+      currentTicketDependents.forEach((dependent) => {
+        const item = document.createElement("div");
+        item.className =
+          "flex items-center justify-between py-1 border-b last:border-b-0 border-gray-200";
+
+        const info = document.createElement("div");
+        info.className = "flex-grow";
+
+        // State badge
+        const stateBadge = document.createElement("span");
+        stateBadge.className = `inline-block px-2 py-1 mr-2 text-xs rounded ${getStateClass(
+          dependent.state_name
+        )}`;
+        stateBadge.textContent = dependent.state_name;
+
+        const title = document.createElement("span");
+        title.className = "text-sm";
+        title.textContent = `#${dependent.id}: ${dependent.what}`;
+
+        info.appendChild(stateBadge);
+        info.appendChild(title);
+
+        item.appendChild(info);
+
+        dependentsList.appendChild(item);
+      });
+    }
+
+    function updateDependencyStatus(allResolved) {
+      if (currentTicketDependencies.length === 0) {
+        dependencyStatus.classList.add("hidden");
+        return;
+      }
+
+      dependencyStatus.classList.remove("hidden");
+
+      if (allResolved) {
+        dependencyStatus.className =
+          "p-2 rounded mt-2 bg-green-100 text-green-800";
+        dependencyStatus.innerHTML =
+          '<i class="fas fa-check-circle mr-1"></i> All dependencies are resolved';
+      } else {
+        dependencyStatus.className =
+          "p-2 rounded mt-2 bg-orange-100 text-orange-800";
+        dependencyStatus.innerHTML =
+          '<i class="fas fa-exclamation-circle mr-1"></i> Not all dependencies are resolved';
+      }
+    }
+
+    function handleAddDependency() {
+      const dependencyId = addDependencySelect.value;
+
+      if (!dependencyId) {
+        showError("Please select a ticket to add as dependency");
+        return;
+      }
+
+      if (!currentTicketId) {
+        showError(
+          "Current ticket ID is missing. Please save the ticket first."
+        );
+        return;
+      }
+
+      console.log(
+        `Adding dependency ${dependencyId} to ticket ${currentTicketId}`
+      );
+
+      // Check if this dependency is already added
+      if (currentTicketDependencies.some((dep) => dep.id == dependencyId)) {
+        showError("This dependency is already added");
+        return;
+      }
+
+      fetchJSON(`/dependencies/${currentTicketId}/add/${dependencyId}`, {
+        method: "POST",
+      })
+        .then((response) => {
+          console.log("Dependency added response:", response);
+          showSuccessMessage("Dependency added successfully");
+
+          // Reload dependencies to update UI
+          loadTicketDependencies(currentTicketId);
+
+          // Reset the select dropdown
+          addDependencySelect.value = "";
+        })
+        .catch((error) => {
+          console.error("Failed to add dependency:", error);
+          showError("Failed to add dependency: " + error.message);
+        });
+    }
+
+    function removeDependency(ticketId, dependencyId) {
+      fetchJSON(`/dependencies/${ticketId}/remove/${dependencyId}`, {
+        method: "DELETE",
+      })
+        .then((response) => {
+          showSuccessMessage("Dependency removed successfully");
+          loadTicketDependencies(ticketId);
+        })
+        .catch((error) => {
+          showError("Failed to remove dependency: " + error.message);
+        });
+    }
+  });
 </script>
-{% endblock %} 
+{% endblock %}

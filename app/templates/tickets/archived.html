@@ -1,0 +1,63 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mx-auto px-4 py-8">
+  <nav class="mb-6">
+    <a
+      href="/tickets{% if project_id %}?project_id={{ project_id }}{% endif %}"
+      class="text-blue-600 hover:underline"
+      >&larr; Back to Board</a
+    >
+  </nav>
+  <h1 class="text-2xl font-bold mb-4">Archived Tickets</h1>
+  <div id="archived-tickets-container" class="flex flex-wrap gap-4">
+    <!-- Archived tickets will be loaded here -->
+  </div>
+  <div id="no-archived-tickets" class="text-gray-500 mt-8 hidden">
+    No archived tickets found.
+  </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const container = document.getElementById("archived-tickets-container");
+    const noTicketsMsg = document.getElementById("no-archived-tickets");
+    const params = new URLSearchParams(window.location.search);
+    const projectId = params.get("project_id");
+    let url = "/tickets/archived.json";
+    if (projectId) url += `?project_id=${projectId}`;
+
+    fetch(url)
+      .then((response) => response.json())
+      .then((tickets) => {
+        container.innerHTML = "";
+        if (!tickets.length) {
+          noTicketsMsg.classList.remove("hidden");
+          return;
+        }
+        noTicketsMsg.classList.add("hidden");
+        tickets.forEach((ticket) => {
+          const card = document.createElement("div");
+          card.className =
+            "bg-white rounded shadow p-4 w-full sm:w-80 flex flex-col";
+          card.innerHTML = `
+            <div class="font-semibold text-lg mb-2">${ticket.what}</div>
+            <div class="text-gray-600 text-sm mb-1">ID: ${ticket.id}</div>
+            <div class="text-gray-500 text-xs mb-2">Completed: ${
+              ticket.completed_date
+                ? new Date(ticket.completed_date).toLocaleString()
+                : "N/A"
+            }</div>
+            <div class="text-xs text-gray-400">State: ${ticket.state_name}</div>
+            <a href="/tickets/${
+              ticket.id
+            }" class="mt-2 text-blue-600 hover:underline text-sm">View Details</a>
+          `;
+          container.appendChild(card);
+        });
+      })
+      .catch(() => {
+        container.innerHTML = "";
+        noTicketsMsg.textContent = "Failed to load archived tickets.";
+        noTicketsMsg.classList.remove("hidden");
+      });
+  });
+</script>
+{% endblock %}
