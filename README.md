@@ -2,7 +2,7 @@
 
 **Bring clarity to your agent-powered coding!**
 
-Welcome to VibeKanban — a simple, modern Kanban board that's not just for you, but for your AI agents too! 
+Welcome to VibeKanban — a simple, modern Kanban board that's not just for you, but for your AI agents too!
 
 ✨ **Track your work. Give your agent context. See what's happening, every step of the way.**
 
@@ -36,18 +36,22 @@ Ever wondered what your agent is actually doing when you ask it to fix a bug or 
 ## Quick Setup (Recommended)
 
 1. Clone the repository:
+
    ```
    git clone https://github.com/shahriarb/vibekanban.git
    cd vibekanban
    ```
 
 2. Run the setup script:
+
    ```
    ./setup.sh
    ```
+
    This script will create a virtual environment, install dependencies, and set up the database.
 
 3. Start the application:
+
    ```
    ./run.sh
    ```
@@ -62,18 +66,21 @@ Ever wondered what your agent is actually doing when you ask it to fix a bug or 
 If you prefer to set up manually or are experiencing issues with the scripts:
 
 1. Clone the repository:
+
    ```
    git clone https://github.com/shahriarb/vibekanban.git
    cd vibekanban
    ```
 
 2. Create a virtual environment and activate it:
+
    ```
    python3 -m venv .venv
    source .venv/bin/activate   # On Windows, use: .venv\Scripts\activate
    ```
 
 3. Install dependencies:
+
    ```
    pip install -r requirements.txt
    ```
@@ -81,14 +88,17 @@ If you prefer to set up manually or are experiencing issues with the scripts:
 4. Initialize the database and migrations:
 
    If this is your first time setting up the project, run:
+
    ```
    flask db init
    flask db migrate -m "Initial migration"
    flask db upgrade
    ```
+
    This will create the database tables based on the current models.
 
    If you already have a `migrations/` folder, you only need to run:
+
    ```
    flask db upgrade
    ```
@@ -109,18 +119,19 @@ To integrate with Cursor's MCP:
 1. Make sure the application is running
 2. In Cursor, go to Cursor Settings > MCP Servers > Add New Global MCP server
 
-
 In Cursor MCP settings:
+
 - Name: KanbanBoard
-- Type: Command 
-- Command: /full/path/to/.venv/bin/python /full/path/to/kanban_mcp_server.py
+- Type: Command
+- Command: /full/path/to/.venv/bin/python /full/path/to/mcp/kanban.py
 
 Example `mcp.json`:
+
 ```
 {
   "mcpServers": {
     "KanbanBoard": {
-      "command": "/full/path/to/.venv/bin/python /full/path/to/kanban_mcp_server.py",
+      "command": "/full/path/to/.venv/bin/python /full/path/to/mcp/kanban.py",
       "args": [],
       "enabled": true
     }
@@ -131,6 +142,7 @@ Example `mcp.json`:
 ### Using the KanbanBoard MCP
 
 Once configured, you can use commands like:
+
 - `@KanbanBoard get kanban status` - View ticket counts by state
 - `@KanbanBoard get project ID by name` - Look up a project ID by project name
 - `@KanbanBoard list projects` - List all projects
@@ -140,7 +152,6 @@ Once configured, you can use commands like:
 - `@KanbanBoard add comment` - Add a comment to a ticket
 
 ### Example Rules to use the MCP server in Cursor
-
 
 ```
 You are an AI assistant specialized in software development design and architecture.
@@ -179,7 +190,7 @@ For each Bug report:
 - Evaluate the reason bug is happening and add findings as the comment to the ticket in the @KanbanBoard.
 
 - Move the ticket to 'in progress' state in the @KanbanBoard and start fixing the bug based on defined criteria.
-    
+
 - Move the ticket to 'done' state in the @KanbanBoard when the bug is fixed.
 ```
 
