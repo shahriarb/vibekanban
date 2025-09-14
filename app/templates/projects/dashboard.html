@@ -1,305 +1,359 @@
-{% extends "base.html" %}
-
-{% block title %}Projects - Kanban Board{% endblock %}
-
+{% extends "base.html" %} {% block title %}Projects - Kanban Board{% endblock %}
 {% block content %}
 <div class="mb-8">
-    <h1 class="text-2xl font-bold mb-4">Projects</h1>
-    
-    <div class="flex justify-between items-center mb-4">
-        <p class="text-gray-600">Manage your projects and their tickets</p>
-        <button id="new-project-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
-            <i class="fas fa-plus mr-2"></i> New Project
-        </button>
-    </div>
-    
-    <!-- Error message display -->
-    <div id="error-message" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden"></div>
-    
-    <!-- Project list -->
-    <div id="projects-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Projects will be loaded here -->
-        <div class="animate-pulse bg-white rounded-lg shadow-md p-4 h-40"></div>
-        <div class="animate-pulse bg-white rounded-lg shadow-md p-4 h-40"></div>
-        <div class="animate-pulse bg-white rounded-lg shadow-md p-4 h-40"></div>
-    </div>
-    
-    <!-- Empty state -->
-    <div id="empty-state" class="hidden text-center py-12">
-        <i class="fas fa-clipboard-list text-gray-400 text-5xl mb-4"></i>
-        <p class="text-gray-500 text-xl mb-4">No projects found</p>
-        <p class="text-gray-400 mb-4">Create your first project to get started</p>
-        <button id="empty-new-project-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded">
-            <i class="fas fa-plus mr-2"></i> Create Project
-        </button>
-    </div>
+  <h1 class="text-2xl font-bold mb-4">Projects</h1>
+
+  <div class="flex justify-between items-center mb-4">
+    <p class="text-gray-600">Manage your projects and their tickets</p>
+    <button
+      id="new-project-btn"
+      class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+    >
+      <i class="fas fa-plus mr-2"></i> New Project
+    </button>
+  </div>
+
+  <!-- Error message display -->
+  <div
+    id="error-message"
+    class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 hidden"
+  ></div>
+
+  <!-- Project list -->
+  <div
+    id="projects-container"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+  >
+    <!-- Projects will be loaded here -->
+    <div class="animate-pulse bg-white rounded-lg shadow-md p-4 h-40"></div>
+    <div class="animate-pulse bg-white rounded-lg shadow-md p-4 h-40"></div>
+    <div class="animate-pulse bg-white rounded-lg shadow-md p-4 h-40"></div>
+  </div>
+
+  <!-- Empty state -->
+  <div id="empty-state" class="hidden text-center py-12">
+    <i class="fas fa-clipboard-list text-gray-400 text-5xl mb-4"></i>
+    <p class="text-gray-500 text-xl mb-4">No projects found</p>
+    <p class="text-gray-400 mb-4">Create your first project to get started</p>
+    <button
+      id="empty-new-project-btn"
+      class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+    >
+      <i class="fas fa-plus mr-2"></i> Create Project
+    </button>
+  </div>
 </div>
 
 <!-- New Project Modal -->
-<div id="project-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h2 id="modal-title" class="text-xl font-bold">New Project</h2>
-            <button class="modal-close text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <form id="project-form">
-            <input type="hidden" id="project-id" value="">
-            
-            <div class="mb-4">
-                <label for="project-name" class="block text-gray-700 mb-2">Project Name</label>
-                <input type="text" id="project-name" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-            </div>
-            
-            <div class="mb-6">
-                <label for="project-description" class="block text-gray-700 mb-2">Description</label>
-                <textarea id="project-description" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3"></textarea>
-            </div>
-            
-            <div class="flex justify-end space-x-3">
-                <button type="button" class="modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
-                    Cancel
-                </button>
-                <button type="submit" id="save-project-btn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                    Save Project
-                </button>
-            </div>
-        </form>
+<div
+  id="project-modal"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"
+>
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 id="modal-title" class="text-xl font-bold">New Project</h2>
+      <button class="modal-close text-gray-500 hover:text-gray-700">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
+
+    <form id="project-form">
+      <input type="hidden" id="project-id" value="" />
+
+      <div class="mb-4">
+        <label for="project-name" class="block text-gray-700 mb-2"
+          >Project Name</label
+        >
+        <input
+          type="text"
+          id="project-name"
+          class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          required
+        />
+      </div>
+
+      <div class="mb-6">
+        <label for="project-description" class="block text-gray-700 mb-2"
+          >Description</label
+        >
+        <textarea
+          id="project-description"
+          class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          rows="3"
+        ></textarea>
+      </div>
+
+      <div class="flex justify-end space-x-3">
+        <button
+          type="button"
+          class="modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          id="save-project-btn"
+          class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+        >
+          Save Project
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-        <div class="mb-4">
-            <h2 class="text-xl font-bold">Confirm Delete</h2>
-            <p class="text-gray-600 mt-2">Are you sure you want to delete this project? This will also delete all tickets associated with this project.</p>
-        </div>
-        
-        <div class="flex justify-end space-x-3">
-            <button type="button" class="delete-modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100">
-                Cancel
-            </button>
-            <button type="button" id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                Delete Project
-            </button>
-        </div>
+<div
+  id="delete-modal"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50"
+>
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+    <div class="mb-4">
+      <h2 class="text-xl font-bold">Confirm Delete</h2>
+      <p class="text-gray-600 mt-2">
+        Are you sure you want to delete this project? This will also delete all
+        tickets associated with this project.
+      </p>
     </div>
-</div>
-{% endblock %}
 
-{% block scripts %}
+    <div class="flex justify-end space-x-3">
+      <button
+        type="button"
+        class="delete-modal-close px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        id="confirm-delete-btn"
+        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+      >
+        Delete Project
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // DOM elements
-        const projectsContainer = document.getElementById('projects-container');
-        const emptyState = document.getElementById('empty-state');
-        const projectModal = document.getElementById('project-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const projectForm = document.getElementById('project-form');
-        const projectIdInput = document.getElementById('project-id');
-        const projectNameInput = document.getElementById('project-name');
-        const projectDescInput = document.getElementById('project-description');
-        const newProjectBtn = document.getElementById('new-project-btn');
-        const emptyNewProjectBtn = document.getElementById('empty-new-project-btn');
-        const deleteModal = document.getElementById('delete-modal');
-        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-        
-        // Add event listeners
-        newProjectBtn.addEventListener('click', () => openProjectModal());
-        emptyNewProjectBtn.addEventListener('click', () => openProjectModal());
-        
-        document.querySelectorAll('.modal-close').forEach(btn => {
-            btn.addEventListener('click', () => closeProjectModal());
-        });
-        
-        document.querySelectorAll('.delete-modal-close').forEach(btn => {
-            btn.addEventListener('click', () => closeDeleteModal());
-        });
-        
-        projectForm.addEventListener('submit', handleProjectSubmit);
-        
-        // Load projects on page load
-        loadProjects();
-        
-        // Functions
-        function loadProjects() {
-            fetchJSON('/projects/')
-                .then(projects => {
-                    projectsContainer.innerHTML = '';
-                    
-                    if (projects && projects.length > 0) {
-                        emptyState.classList.add('hidden');
-                        projectsContainer.classList.remove('hidden');
-                        
-                        projects.forEach(project => {
-                            projectsContainer.appendChild(createProjectCard(project));
-                        });
-                    } else {
-                        projectsContainer.classList.add('hidden');
-                        emptyState.classList.remove('hidden');
-                    }
-                })
-                .catch(error => {
-                    showError('Failed to load projects: ' + error.message);
-                });
-        }
-        
-        function createProjectCard(project) {
-            const card = document.createElement('div');
-            card.className = 'bg-white rounded-lg shadow-md p-5 flex flex-col justify-between';
-            card.dataset.id = project.id;
-            
-            const content = document.createElement('div');
-            
-            const heading = document.createElement('h3');
-            heading.className = 'text-lg font-semibold mb-2 text-indigo-700 flex items-center';
-            
-            // Project name
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = project.name;
-            
-            // Project ID visual element
-            const idSpan = document.createElement('span');
-            idSpan.className = 'ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono';
-            idSpan.textContent = `(${project.id})`;
-            
-            heading.appendChild(nameSpan);
-            heading.appendChild(idSpan);
-            
-            const description = document.createElement('p');
-            description.className = 'text-gray-600 mb-4 line-clamp-2';
-            description.textContent = project.description || 'No description provided';
-            
-            const date = document.createElement('p');
-            date.className = 'text-gray-500 text-sm';
-            date.textContent = `Created: ${new Date(project.created_date).toLocaleDateString()}`;
-            
-            content.appendChild(heading);
-            content.appendChild(description);
-            content.appendChild(date);
-            
-            const footer = document.createElement('div');
-            footer.className = 'flex justify-between items-center mt-4';
-            
-            const ticketInfo = document.createElement('span');
-            ticketInfo.className = 'text-gray-500';
-            ticketInfo.innerHTML = `<i class="fas fa-ticket-alt mr-1"></i> ${project.ticket_count} ticket${project.ticket_count !== 1 ? 's' : ''}`;
-            
-            const actions = document.createElement('div');
-            actions.className = 'flex space-x-2';
-            
-            const viewBtn = document.createElement('button');
-            viewBtn.className = 'bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md hover:bg-indigo-200';
-            viewBtn.innerHTML = '<i class="fas fa-eye"></i>';
-            viewBtn.addEventListener('click', () => {
-                window.location.href = `/tickets/board?project_id=${project.id}`;
-            });
-            
-            const editBtn = document.createElement('button');
-            editBtn.className = 'bg-gray-100 text-gray-700 px-2 py-1 rounded-md hover:bg-gray-200';
-            editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-            editBtn.addEventListener('click', () => openProjectModal(project));
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'bg-red-100 text-red-700 px-2 py-1 rounded-md hover:bg-red-200';
-            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-            deleteBtn.addEventListener('click', () => openDeleteModal(project.id));
-            
-            actions.appendChild(viewBtn);
-            actions.appendChild(editBtn);
-            actions.appendChild(deleteBtn);
-            
-            footer.appendChild(ticketInfo);
-            footer.appendChild(actions);
-            
-            card.appendChild(content);
-            card.appendChild(footer);
-            
-            return card;
-        }
-        
-        function openProjectModal(project = null) {
-            projectForm.reset();
-            
-            if (project) {
-                modalTitle.textContent = 'Edit Project';
-                projectIdInput.value = project.id;
-                projectNameInput.value = project.name;
-                projectDescInput.value = project.description || '';
-            } else {
-                modalTitle.textContent = 'New Project';
-                projectIdInput.value = '';
-            }
-            
-            projectModal.classList.remove('hidden');
-        }
-        
-        function closeProjectModal() {
-            projectModal.classList.add('hidden');
-        }
-        
-        function openDeleteModal(projectId) {
-            confirmDeleteBtn.dataset.id = projectId;
-            deleteModal.classList.remove('hidden');
-            
-            confirmDeleteBtn.addEventListener('click', handleProjectDelete);
-        }
-        
-        function closeDeleteModal() {
-            deleteModal.classList.add('hidden');
-            confirmDeleteBtn.removeEventListener('click', handleProjectDelete);
-        }
-        
-        function handleProjectSubmit(e) {
-            e.preventDefault();
-            
-            const projectId = projectIdInput.value;
-            const name = projectNameInput.value;
-            const description = projectDescInput.value;
-            
-            const projectData = {
-                name,
-                description
-            };
-            
-            let url = '/projects/';
-            let method = 'POST';
-            
-            if (projectId) {
-                url = `/projects/${projectId}`;
-                method = 'PUT';
-            }
-            
-            fetchJSON(url, {
-                method,
-                body: JSON.stringify(projectData)
-            })
-                .then(() => {
-                    closeProjectModal();
-                    loadProjects();
-                })
-                .catch(error => {
-                    showError('Failed to save project: ' + error.message);
-                });
-        }
-        
-        function handleProjectDelete() {
-            const projectId = confirmDeleteBtn.dataset.id;
-            
-            fetchJSON(`/projects/${projectId}`, {
-                method: 'DELETE'
-            })
-                .then(() => {
-                    closeDeleteModal();
-                    loadProjects();
-                })
-                .catch(error => {
-                    showError('Failed to delete project: ' + error.message);
-                });
-        }
+  document.addEventListener("DOMContentLoaded", function () {
+    // DOM elements
+    const projectsContainer = document.getElementById("projects-container");
+    const emptyState = document.getElementById("empty-state");
+    const projectModal = document.getElementById("project-modal");
+    const modalTitle = document.getElementById("modal-title");
+    const projectForm = document.getElementById("project-form");
+    const projectIdInput = document.getElementById("project-id");
+    const projectNameInput = document.getElementById("project-name");
+    const projectDescInput = document.getElementById("project-description");
+    const newProjectBtn = document.getElementById("new-project-btn");
+    const emptyNewProjectBtn = document.getElementById("empty-new-project-btn");
+    const deleteModal = document.getElementById("delete-modal");
+    const confirmDeleteBtn = document.getElementById("confirm-delete-btn");
+
+    // Add event listeners
+    newProjectBtn.addEventListener("click", () => openProjectModal());
+    emptyNewProjectBtn.addEventListener("click", () => openProjectModal());
+
+    document.querySelectorAll(".modal-close").forEach((btn) => {
+      btn.addEventListener("click", () => closeProjectModal());
     });
+
+    document.querySelectorAll(".delete-modal-close").forEach((btn) => {
+      btn.addEventListener("click", () => closeDeleteModal());
+    });
+
+    projectForm.addEventListener("submit", handleProjectSubmit);
+
+    // Load projects on page load
+    loadProjects();
+
+    // Functions
+    function loadProjects() {
+      fetchJSON("/projects/")
+        .then((projects) => {
+          projectsContainer.innerHTML = "";
+
+          if (projects && projects.length > 0) {
+            emptyState.classList.add("hidden");
+            projectsContainer.classList.remove("hidden");
+
+            projects.forEach((project) => {
+              projectsContainer.appendChild(createProjectCard(project));
+            });
+          } else {
+            projectsContainer.classList.add("hidden");
+            emptyState.classList.remove("hidden");
+          }
+        })
+        .catch((error) => {
+          showError("Failed to load projects: " + error.message);
+        });
+    }
+
+    function createProjectCard(project) {
+      const card = document.createElement("div");
+      card.className =
+        "bg-white rounded-lg shadow-md p-5 flex flex-col justify-between";
+      card.dataset.id = project.id;
+
+      const content = document.createElement("div");
+
+      const heading = document.createElement("h3");
+      heading.className =
+        "text-lg font-semibold mb-2 text-indigo-700 flex items-center";
+
+      // Project name
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = project.name;
+
+      // Project ID visual element
+      const idSpan = document.createElement("span");
+      idSpan.className =
+        "ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-mono";
+      idSpan.textContent = `(${project.id})`;
+
+      heading.appendChild(nameSpan);
+      heading.appendChild(idSpan);
+
+      const description = document.createElement("p");
+      description.className = "text-gray-600 mb-4 line-clamp-2";
+      description.textContent =
+        project.description || "No description provided";
+
+      const date = document.createElement("p");
+      date.className = "text-gray-500 text-sm";
+      date.textContent = `Created: ${new Date(
+        project.created_date
+      ).toLocaleDateString()}`;
+
+      content.appendChild(heading);
+      content.appendChild(description);
+      content.appendChild(date);
+
+      const footer = document.createElement("div");
+      footer.className = "flex justify-between items-center mt-4";
+
+      const ticketInfo = document.createElement("span");
+      ticketInfo.className = "text-gray-500";
+      ticketInfo.innerHTML = `<i class="fas fa-ticket-alt mr-1"></i> ${
+        project.ticket_count
+      } ticket${project.ticket_count !== 1 ? "s" : ""}`;
+
+      const actions = document.createElement("div");
+      actions.className = "flex space-x-2";
+
+      const viewBtn = document.createElement("button");
+      viewBtn.className =
+        "bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md hover:bg-indigo-200";
+      viewBtn.innerHTML = '<i class="fas fa-eye"></i>';
+      viewBtn.addEventListener("click", () => {
+        window.location.href = `/tickets/board?project_id=${project.id}`;
+      });
+
+      const editBtn = document.createElement("button");
+      editBtn.className =
+        "bg-gray-100 text-gray-700 px-2 py-1 rounded-md hover:bg-gray-200";
+      editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+      editBtn.addEventListener("click", () => openProjectModal(project));
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className =
+        "bg-red-100 text-red-700 px-2 py-1 rounded-md hover:bg-red-200";
+      deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+      deleteBtn.addEventListener("click", () => openDeleteModal(project.id));
+
+      actions.appendChild(viewBtn);
+      actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
+
+      footer.appendChild(ticketInfo);
+      footer.appendChild(actions);
+
+      card.appendChild(content);
+      card.appendChild(footer);
+
+      return card;
+    }
+
+    function openProjectModal(project = null) {
+      projectForm.reset();
+
+      if (project) {
+        modalTitle.textContent = "Edit Project";
+        projectIdInput.value = project.id;
+        projectNameInput.value = project.name;
+        projectDescInput.value = project.description || "";
+      } else {
+        modalTitle.textContent = "New Project";
+        projectIdInput.value = "";
+      }
+
+      projectModal.classList.remove("hidden");
+    }
+
+    function closeProjectModal() {
+      projectModal.classList.add("hidden");
+    }
+
+    function openDeleteModal(projectId) {
+      confirmDeleteBtn.dataset.id = projectId;
+      deleteModal.classList.remove("hidden");
+
+      confirmDeleteBtn.addEventListener("click", handleProjectDelete);
+    }
+
+    function closeDeleteModal() {
+      deleteModal.classList.add("hidden");
+      confirmDeleteBtn.removeEventListener("click", handleProjectDelete);
+    }
+
+    function handleProjectSubmit(e) {
+      e.preventDefault();
+
+      const projectId = projectIdInput.value;
+      const name = projectNameInput.value;
+      const description = projectDescInput.value;
+
+      const projectData = {
+        name,
+        description,
+      };
+
+      let url = "/projects/";
+      let method = "POST";
+
+      if (projectId) {
+        url = `/projects/${projectId}`;
+        method = "PUT";
+      }
+
+      fetchJSON(url, {
+        method,
+        body: JSON.stringify(projectData),
+      })
+        .then(() => {
+          closeProjectModal();
+          loadProjects();
+        })
+        .catch((error) => {
+          showError("Failed to save project: " + error.message);
+        });
+    }
+
+    function handleProjectDelete() {
+      const projectId = confirmDeleteBtn.dataset.id;
+
+      fetchJSON(`/projects/${projectId}`, {
+        method: "DELETE",
+      })
+        .then(() => {
+          closeDeleteModal();
+          loadProjects();
+        })
+        .catch((error) => {
+          showError("Failed to delete project: " + error.message);
+        });
+    }
+  });
 </script>
-{% endblock %} 
+{% endblock %}

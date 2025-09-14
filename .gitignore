@@ -85,4 +85,6 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
-*.lnk 
+*.lnk
+
+.envrc

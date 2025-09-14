@@ -1,7 +1,10 @@
 from typing import Dict, List, Any, Optional
 import sys
 import os
-import json
+
+# Add parent directory to Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from mcp.server.fastmcp import FastMCP
 import difflib
 import logging
@@ -11,6 +14,7 @@ from app import create_app, db
 from app.models.project import Project
 from app.models.ticket import Ticket, TicketState
 from app.models.comments import Comment
+from app.db_updates import ensure_archived_state_exists
 
 # Initialize FastMCP server
 mcp = FastMCP("kanban-board")
@@ -19,7 +23,9 @@ mcp = FastMCP("kanban-board")
 app = create_app()
 app_context = app.app_context()
 
-MOVE_MSG = "This script has moved. Please update your script or MCP configuration to use 'mcp/kanban.py' instead of 'kanban_mcp_server.py'."
+# Ensure 'archived' state exists
+with app_context:
+    ensure_archived_state_exists()
 
 
 # Database access functions
@@ -82,6 +88,8 @@ def get_tickets_from_db(project_id=None):
             result += f"Type: {ticket_dict.get('type_name', 'Unknown')}\n"
             if ticket_dict.get("why"):
                 result += f"Why: {ticket_dict['why']}\n"
+            result += f"Created: {ticket_dict.get('created_date', 'N/A')}\n"
+            result += f"Completed: {ticket_dict.get('completed_date', 'N/A')}\n"
             result += "\n"
 
         return result
@@ -250,14 +258,37 @@ def get_project_id_by_name_fuzzy(name: str) -> Optional[int]:
 
 
 @mcp.tool()
-async def get_project_id_by_name(name: str) -> str:
-    return MOVE_MSG
+async def get_project_id_by_name(name: str) -> Optional[int]:
+    """
+    Look up a project ID by project name using fuzzy, case-insensitive, and typo-tolerant matching.
+
+    Args:
+        name (str): The project name or partial name to search for. The search is not case-sensitive and will tolerate minor typos or similar words.
+
+    Returns:
+        int or None: The ID of the best-matching project, or None if no suitable match is found.
+
+    Usage:
+        Use this tool when you have a project name (even if not exact) and need to retrieve its project ID for further operations. This is especially useful for agents or users who may not know the exact spelling or case of the project name.
+    """
+    with app_context:
+        return get_project_id_by_name_fuzzy(name)
 
 
 # MCP Tool Implementations
 @mcp.tool()
 async def get_kanban_status() -> str:
-    return MOVE_MSG
+    """
+    Get the current status of the Kanban board, including ticket counts by state and project.
+
+    Returns:
+        str: A formatted string summarizing the total number of tickets, ticket counts by state (backlog, in progress, done, on hold), and a breakdown of tickets per project.
+
+    Usage:
+        Use this tool to get a high-level overview of the Kanban board's current state, which is useful for reporting, dashboards, or monitoring progress across all projects.
+    """
+    with app_context:
+        return get_kanban_status_from_db()
 
 
 @mcp.tool()
@@ -269,29 +300,119 @@ async def create_ticket(
     test_steps: Optional[str] = None,
     ticket_type: int = 2,
 ) -> str:
-    return MOVE_MSG
+    """
+    Create a new ticket in the Kanban board.
+
+    Args:
+        project_id (int): The ID of the project this ticket belongs to.
+        what (str): Description of what needs to be done (ticket summary).
+        why (str, optional): Explanation of why this ticket is important.
+        acceptance_criteria (str, optional): Criteria for considering this ticket done.
+        test_steps (str, optional): Steps to test this ticket.
+        ticket_type (int, optional): Type of ticket (1: bug, 2: story, etc.). Defaults to 2 (story).
+
+    Returns:
+        str: A confirmation message with the new ticket's ID and summary, or an error message if creation fails.
+
+    Usage:
+        Use this tool to add new work items, bugs, or stories to a project. Provide as much detail as possible for clarity and traceability. The ticket will be created in the 'backlog' state by default.
+    """
+    with app_context:
+        return create_ticket_in_db(
+            project_id, what, why, acceptance_criteria, test_steps, ticket_type
+        )
 
 
 @mcp.tool()
 async def update_ticket_state(ticket_id: int, state: str) -> str:
-    return MOVE_MSG
+    """
+    Update a ticket's state in the Kanban board.
+
+    Args:
+        ticket_id (int): The ID of the ticket to update.
+        state (str): The new state name (e.g., 'backlog', 'in progress', 'done', 'on hold').
+
+    Returns:
+        str: A confirmation message if the update is successful, or an error message if the ticket or state is invalid.
+
+    Usage:
+        Use this tool to move a ticket between workflow states. This is essential for tracking progress and managing work in the Kanban process.
+    """
+    with app_context:
+        return update_ticket_state_in_db(ticket_id, state)
 
 
 @mcp.tool()
 async def list_projects() -> str:
-    return MOVE_MSG
+    """
+    List all projects in the Kanban board.
+
+    Returns:
+        str: A formatted list of all projects, including their IDs, names, descriptions, and ticket counts.
+
+    Usage:
+        Use this tool to discover available projects and their basic information. Useful for selecting a project before creating or listing tickets.
+    """
+    print("list_projects tool called", file=sys.stderr)
+    with app_context:
+        return get_projects_from_db()
 
 
 @mcp.tool()
 async def list_tickets(project_id: Optional[int] = None) -> str:
-    return MOVE_MSG
+    """
+    List tickets, optionally filtered by project.
+
+    Args:
+        project_id (int, optional): The ID of the project to filter tickets by. If not provided, lists all tickets across all projects.
+
+    Returns:
+        str: A formatted list of tickets, including their IDs, summaries, states, and types. If filtered by project, only tickets for that project are shown.
+
+    Usage:
+        Use this tool to review the current work items, bugs, or stories in a project or across all projects. Helpful for planning, triage, or reporting.
+    """
+    # Harden project_id to accept string or int
+    if project_id is not None:
+        try:
+            project_id = int(project_id)
+        except (ValueError, TypeError):
+            project_id = None
+    with app_context:
+        return get_tickets_from_db(project_id)
 
 
 @mcp.tool()
 async def add_comment(ticket_id: int, content: str) -> str:
-    return MOVE_MSG
+    """
+    Add a comment to a ticket.
+
+    Args:
+        ticket_id (int): The ID of the ticket to comment on.
+        content (str): The comment text to add.
+
+    Returns:
+        str: A confirmation message if the comment is added successfully, or an error message if the ticket is not found.
+
+    Usage:
+        Use this tool to add clarifications, updates, or discussion to a ticket. Comments are useful for collaboration and documenting decisions or progress.
+    """
+    with app_context:
+        return add_comment_to_db(ticket_id, content)
 
 
 # Run the server
 if __name__ == "__main__":
-    mcp.run(transport="stdio")
+    print("Starting Kanban MCP Server...", file=sys.stderr)
+    print("Using direct database access instead of HTTP", file=sys.stderr)
+    try:
+        # Push the application context
+        app_context.push()
+
+        # Run the MCP server with stdio transport for Cursor
+        mcp.run(transport="stdio")
+    except Exception as e:
+        print(f"Error starting MCP server: {str(e)}", file=sys.stderr)
+    finally:
+        # Clean up the application context
+        app_context.pop()

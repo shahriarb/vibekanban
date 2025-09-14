@@ -15,6 +15,11 @@ fi
 echo "Activating virtual environment..."
 source .venv/bin/activate
 
+# Upgrade pip and install setuptools first
+echo "Upgrading pip and installing setuptools..."
+pip install --upgrade pip
+pip install setuptools wheel
+
 # Install dependencies
 echo "Installing dependencies..."
 pip install -r requirements.txt
@@ -31,4 +36,4 @@ fi
 
 flask db upgrade
 
-echo "Setup complete! Run './run.sh' to start the application." 
+echo "Setup complete! Run './run.sh' to start the application."
