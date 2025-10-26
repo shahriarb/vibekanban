@@ -147,10 +147,10 @@ flowchart TB
   NLB --> INX["ingress nginx"]
   INX --> ADP["MCP Adapter"]
 
-  CF -->| "WAF rate and bot rules" | CF
-  INX -->| "limit rps per ip" | INX
-  ADP -->| "policy anonymous or authenticated\nlimit le 50 radius le 10
-            reject blank plus wide queries" | ADP
-  ADP -->| "timeout and retries to search api" | ADP
-
+  CF -->|WAF rate and bot rules| CF
+  INX -->|limit rps per ip| INX
+  ADP -->|policy anonymous or authenticated
+          limit max 50 radius max 10
+          reject blank plus wide queries| ADP
+  ADP -->|timeout and retries to search api| ADP
 ```
