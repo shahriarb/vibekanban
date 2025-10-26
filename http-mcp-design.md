@@ -146,11 +146,10 @@ flowchart TB
   CF --> NLB["AWS NLB"]
   NLB --> INX["ingress nginx"]
   INX --> ADP["MCP Adapter"]
+  ADP --> SRCH["Search API"]
 
-  CF -->|WAF rate and bot rules| CF
-  INX -->|limit rps per ip| INX
-  ADP -->|policy anonymous or authenticated
-          limit max 50 radius max 10
-          reject blank plus wide queries| ADP
-  ADP -->|timeout and retries to search api| ADP
+  CF -.-> WAFCTRL["WAF controls:\nrate limits and bot rules"]
+  INX -.-> RLCTRL["Ingress controls:\nlimit rps per ip"]
+  ADP -.-> POLCTRL["Adapter policy:\nanonymous or authenticated\nlimit max 50 radius max 10\nreject blank plus wide queries"]
+  ADP -.-> RESCTRL["Resilience:\ntimeouts and retries to search api"]
 ```
