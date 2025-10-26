@@ -148,8 +148,14 @@ flowchart TB
   INX --> ADP["MCP Adapter"]
   ADP --> SRCH["Search API"]
 
-  CF -.-> WAFCTRL["WAF controls:\nrate limits and bot rules"]
-  INX -.-> RLCTRL["Ingress controls:\nlimit rps per ip"]
-  ADP -.-> POLCTRL["Adapter policy:\nanonymous or authenticated\nlimit max 50 radius max 10\nreject blank plus wide queries"]
-  ADP -.-> RESCTRL["Resilience:\ntimeouts and retries to search api"]
+  CF -.-> WAFCTRL["WAF controls:
+                   rate limits and bot rules"]
+  INX -.-> RLCTRL["Ingress controls:
+                   limit rps per ip"]
+  ADP -.-> POLCTRL["Adapter policy:
+                    anonymous or authenticated
+                    limit max 50 radius max 10
+                    reject blank plus wide queries"]
+  ADP -.-> RESCTRL["Resilience:
+                    timeouts and retries to search api"]
 ```
