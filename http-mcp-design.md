@@ -13,10 +13,20 @@ flowchart LR
   end
 
   subgraph Cluster["EKS Cluster"]
-    ADP["MCP Adapter\nstateless\nJSON RPC over WS or HTTP\nzod validation\npolicy caps anti scrape\nresult shaping\npseudonymous cookie"]
-    RDS["Redis cache\nTTL 60-120s"]
-    AUTH["Auth Service optional\nwell known\nauthorize\ntoken"]
-    SRCH["Search API\nread only"]
+    ADP["MCP Adapter\nstateless
+         JSON RPC over WS or HTTP
+         zod validation
+         policy caps anti scrape
+         result shaping
+         pseudonymous cookie"]
+    RDS["Redis cache
+         TTL 60-120s"]
+    AUTH["Auth Service optional
+          well known
+          authorize
+          token"]
+    SRCH["Search API
+          read only"]
   end
 
   C -->|WSS HTTPS| CF --> NLB --> INX
