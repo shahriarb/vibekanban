@@ -9,7 +9,7 @@ flowchart LR
   subgraph Edge["Edge"]
     CF[CloudFront + AWS WAF]
     NLB[AWS NLB]
-    INX[ingress-nginx (EKS Auto Mode)]
+    INX[ingress-nginx]
   end
 
   subgraph Cluster["EKS Cluster"]
