@@ -314,173 +314,46 @@ MCP Authorization: OAuth 2.1 + PKCE, with RFC 8414 metadata discovery (auth is o
 
 ## Appendix: Sources
 
-* MCP architecture and tools — official docs.
-* MCP Authorization (OAuth 2.1 + PKCE; metadata discovery).
-* JSON-RPC 2.0 specification.
-* WebSocket protocol (RFC 6455).
-* CloudFront WebSocket support.
-* AWS WAF rate-based rules (overview + evaluation window).
-* ingress-nginx rate limiting (limit-rps example).
-* GitHub Mermaid diagrams (how GitHub renders diagrams).
-# Http MCP
+* **MCP – Overview & Spec (tools, transports, resources, prompts)**
 
-## Components (EKS + CloudFront/WAF + NLB + ingress-nginx)
+  * [https://modelcontextprotocol.io/](https://modelcontextprotocol.io/)
+  * [https://modelcontextprotocol.io/specification/](https://modelcontextprotocol.io/specification/)
 
-```mermaid
-flowchart LR
-  subgraph Client["MCP Client"]
-    C["Client"]
-  end
+* **MCP Authorization (HTTP; OAuth 2.1 + PKCE profile; discovery)**
 
-  subgraph Edge["Edge"]
-    CF["CloudFront + AWS WAF"]
-    NLB["AWS NLB"]
-    INX["ingress nginx"]
-  end
+  * [https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization](https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization)
+  * RFC 8414 (OAuth 2.0 Authorization Server Metadata): [https://www.rfc-editor.org/rfc/rfc8414](https://www.rfc-editor.org/rfc/rfc8414)
+  * RFC 7636 (PKCE): [https://www.rfc-editor.org/rfc/rfc7636](https://www.rfc-editor.org/rfc/rfc7636)
 
-  subgraph Cluster["EKS Cluster"]
-    ADP["MCP Adapter
-         stateless
-         JSON RPC over WS or HTTP
-         zod validation
-         policy caps anti scrape
-         result shaping
-         pseudonymous cookie"]
-    RDS["Redis cache
-         TTL 60-120s"]
-    AUTH["Auth Service optional
-          well known
-          authorize
-          token"]
-    SRCH["Search API
-          read only"]
-  end
+* **JSON-RPC 2.0**
 
-  C -->|WSS HTTPS| CF --> NLB --> INX
-  INX -->|mcp endpoint| ADP
-  INX -->|oauth endpoints| AUTH
-  ADP <-->|cache| RDS
-  ADP --> SRCH
-```
+  * [https://www.jsonrpc.org/specification](https://www.jsonrpc.org/specification)
 
+* **WebSocket protocol**
 
-## Anonymous search flow
+  * RFC 6455: [https://datatracker.ietf.org/doc/html/rfc6455](https://datatracker.ietf.org/doc/html/rfc6455)
 
-```mermaid
-sequenceDiagram
-    participant U as "MCP Client"
-    participant CF as "CloudFront and WAF"
-    participant N as "AWS NLB"
-    participant I as "ingress nginx"
-    participant A as "MCP Adapter"
-    participant R as "Redis cache"
-    participant S as "Search API"
+* **AWS CloudFront WebSockets**
 
-    Note over U: "User calls v1.search_properties anonymous"
+  * [https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/websockets.html](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/websockets.html)
 
-    U->>CF: "tools call request"
-    CF->>CF: "apply WAF rules rate and bot"
-    CF->>N: "forward request"
-    N->>I: "forward tcp"
-    I->>I: "local rate limit per ip"
-    I->>A: "route to mcp endpoint"
+* **AWS WAF rate-based rules & managed protections**
 
-    A->>A: "validate input and normalize"
-    A->>A: "policy anonymous apply caps and anti scrape"
-    A->>R: "cache lookup by normalized query"
+  * Rate-based rules: [https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based.html](https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-rate-based.html)
+  * AWS Managed Rules overview: [https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-list.html](https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-list.html)
 
-    alt "cache hit"
-        R-->>A: "cached items"
-    else "cache miss"
-        A->>S: "search with filters"
-        S-->>A: "results public fields"
-        A->>R: "cache set ttl 60 to 120 seconds"
-    end
+* **ingress-nginx rate limiting**
 
-    A-->>I: "result minimal fields"
-    I-->>U: "response ok set cookie mcp uid if first visit"
+  * Annotations (rate limiting): [https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#rate-limiting](https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/#rate-limiting)
 
-```
+* **GitHub Mermaid diagrams**
 
-## Optional authorization flow for MCP OAuth with PKCE
+  * [https://docs.github.com/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams](https://docs.github.com/get-started/writing-on-github/working-with-advanced-formatting/creating-diagrams)
 
-```mermaid
-sequenceDiagram
-    participant U as "MCP Client"
-    participant CF as "CloudFront and WAF"
-    participant N as "AWS NLB"
-    participant I as "Ingress nginx"
-    participant AUTH as "Auth Service"
-    participant A as "MCP Adapter"
+---
 
-    Note over U: "Client supports MCP authorization optional"
+## Optional extras
 
-    U->>CF: "get metadata well known oauth server"
-    CF->>N: "forward"
-    N->>I: "forward"
-    I->>AUTH: "serve metadata json"
-    AUTH-->>U: "issuer and endpoints"
-
-    U->>CF: "get authorize with code challenge pkce"
-    CF->>N: "forward"
-    N->>I: "forward"
-    I->>AUTH: "authorize user interaction or stub"
-    AUTH-->>U: "redirect with authorization code"
-
-    U->>CF: "post token with code and code verifier"
-    CF->>N: "forward"
-    N->>I: "forward"
-    I->>AUTH: "exchange code for access token"
-    AUTH-->>U: "access token and scope"
-
-    Note over U: "Now call MCP with bearer token"
-
-    U->>CF: "tools call with authorization bearer"
-    CF->>N: "forward"
-    N->>I: "forward"
-    I->>A: "route to mcp endpoint"
-    A->>A: "validate jwt and build context"
-    A-->>U: "results with policy for authenticated"
-
-```
-
-## WebSocket upgrade and per message policy
-
-```mermaid
-sequenceDiagram
-    participant U as "MCP Client"
-    participant I as "ingress nginx"
-    participant A as "MCP Adapter"
-
-    U->>I: "websocket upgrade with optional authorization header"
-    I-->>U: "switching protocols"
-
-    loop "json rpc messages over websocket"
-        U->>A: "tools call v1.search_properties"
-        A->>A: "if session has token then policy authenticated else policy anonymous"
-        A-->>U: "result with caps applied"
-    end
-
-```
-
-## Error and abuse control decision points
-
-```mermaid
-flowchart TB
-  U["Client"] --> CF["CloudFront and WAF"]
-  CF --> NLB["AWS NLB"]
-  NLB --> INX["ingress nginx"]
-  INX --> ADP["MCP Adapter"]
-  ADP --> SRCH["Search API"]
-
-  CF -.-> WAFCTRL["WAF controls:
-                   rate limits and bot rules"]
-  INX -.-> RLCTRL["Ingress controls:
-                   limit rps per ip"]
-  ADP -.-> POLCTRL["Adapter policy:
-                    anonymous or authenticated
-                    limit max 50 radius max 10
-                    reject blank plus wide queries"]
-  ADP -.-> RESCTRL["Resilience:
-                    timeouts and retries to search api"]
-```
+* **OAuth 2.0 (core)**: RFC 6749 [https://www.rfc-editor.org/rfc/rfc6749](https://www.rfc-editor.org/rfc/rfc6749)
+* **OAuth 2.0 Bearer Token**: RFC 6750 [https://www.rfc-editor.org/rfc/rfc6750](https://www.rfc-editor.org/rfc/rfc6750)
+* **OpenID Connect Discovery** (useful if you adopt OIDC for user auth): [https://openid.net/specs/openid-connect-discovery-1_0.html](https://openid.net/specs/openid-connect-discovery-1_0.html)
