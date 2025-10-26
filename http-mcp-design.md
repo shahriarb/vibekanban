@@ -312,6 +312,178 @@ MCP Authorization: OAuth 2.1 + PKCE, with RFC 8414 metadata discovery (auth is o
 
 ---
 
+# Development Process - MCP: Local `stdio` vs Hosted `http` (dev → prod)
+
+This note compares **running the MCP server locally over `stdio`** (for fast developer feedback) with **hosting it in our cloud stack over HTTP/WebSocket** (for team integration and production). It includes GitHub‑safe Mermaid diagrams and a practical parity checklist.
+
+---
+
+## A. Local development (stdio)
+
+**Goal:** ultra‑fast inner loop. No network, no TLS, zero infra. The MCP client (e.g., ChatGPT desktop or CLI) launches the server as a child process and exchanges JSON‑RPC messages via standard input/output.
+
+```mermaid
+flowchart LR
+  subgraph DevBox["Developer Laptop"]
+    C["MCP Client"]
+    S["MCP Server binary
+        transport: stdio
+        tools: v1.search_properties"]
+  end
+
+  C -->|JSON RPC via stdio| S
+
+  subgraph LocalDeps["Local stubs"]
+    SEARCH["Search stub or dev API"]
+    CACHE["In memory cache"]
+  end
+
+  S --> SEARCH
+  S --> CACHE
+```
+
+**Characteristics**
+
+* **Transport:** `stdio` (no sockets).
+* **Auth:** none. Optionally simulate bearer context with a flag for testing policy branches.
+* **Deps:** can point to **dev/stub** Search API or a small local dataset.
+* **Pros:** fastest startup, simple debugging (print logs), no TLS/ingress to wrangle.
+* **Cons:** cannot test edge controls (WAF, rate‑limits), no real multi‑client concurrency.
+
+---
+
+## B. Hosted integration (http + ws) in our cloud
+
+**Goal:** realistic team testing and production. Same tool surface, served over HTTP/WS behind CloudFront + WAF → NLB → ingress‑nginx → MCP Adapter → Search API.
+
+```mermaid
+flowchart LR
+  CLIENT["MCP Client"] --> CF["CloudFront + WAF"] --> NLB["AWS NLB"] --> INX["ingress nginx"] --> ADP["MCP Adapter
+    transport: http or websocket
+    tools: v1.search_properties"]
+  ADP --> REDIS["Redis cache"]
+  ADP --> SEARCH["Search API"]
+```
+
+**Characteristics**
+
+* **Transport:** HTTPS + optional WebSocket upgrade.
+* **Auth:** anonymous today; **optional OAuth** per MCP Authorization later.
+* **Edge:** CloudFront + WAF for rate/bot; ingress‑nginx local rate limits.
+* **Pros:** real network behavior, caching, scaling, observability, security controls.
+* **Cons:** more moving parts; slower inner loop if you develop only against cloud.
+
+---
+
+## C. Dev→Prod parity: how we keep the surfaces identical
+
+* **Same tool names & schemas:** `v1.search_properties` JSON schema shared across builds.
+* **Same policy function:** in dev, policy receives `auth = anonymous`; in prod, same code path, plus JWT claims when present.
+* **Same handlers:** search handler reads `SEARCH_API_BASE_URL` regardless of transport.
+* **Transport is a shell detail:** we swap `stdio` adapter ↔ `http/ws` adapter without touching business logic.
+
+```mermaid
+flowchart TB
+  subgraph Common["Common core"]
+    SCHEMA["Schemas (zod/json schema)"]
+    POLICY["Policy (caps, anti scrape)"]
+    HANDLERS["Handlers (search)"]
+  end
+
+  subgraph Adapters
+    STDIO["Adapter: stdio"]
+    HTTP["Adapter: http/ws"]
+  end
+
+  STDIO --> Common
+  HTTP --> Common
+```
+
+---
+
+## D. Suggested developer workflow
+
+```mermaid
+sequenceDiagram
+  participant Dev as "Developer"
+  participant CLI as "MCP Client local"
+  participant S as "Server stdio"
+  participant CF as "CloudFront + WAF"
+  participant K8s as "EKS ingress + adapter"
+
+  Dev->>CLI: run client with server path
+  CLI->>S: spawn server (stdio)
+  CLI->>S: tools list / call (fast loop)
+  Note over Dev,S: iterate until green
+
+  Dev->>K8s: deploy adapter image (http/ws)
+  Dev->>CF: smoke test via CloudFront URL
+  CF->>K8s: route to ingress and adapter
+  Note over Dev,K8s: verify parity and edge rules
+```
+
+**Makefile targets**
+
+* `make dev-stdio` → runs the MCP server in stdio mode with local stubs.
+* `make run-http` → runs the HTTP/WS adapter locally (minikube/kind or plain node on :8787).
+* `make deploy` → builds/pushes image, updates Helm chart.
+* `make e2e` → calls through CloudFront to validate end‑to‑end.
+
+---
+
+## E. Configuration toggle (env driven)
+
+| Concern    | Local stdio                                 | Hosted http/ws                             |
+| ---------- | ------------------------------------------- | ------------------------------------------ |
+| Transport  | `TRANSPORT=stdio`                           | `TRANSPORT=http` or `ws`                   |
+| Listen     | n/a (stdio)                                 | `PORT=8787`                                |
+| TLS        | n/a                                         | edge terminates (CF/ingress)               |
+| Auth       | `AUTH=anonymous`                            | `AUTH=anonymous` (now), later `AUTH=oauth` |
+| Search API | `SEARCH_API_BASE_URL=http://localhost:9000` | `https://search.internal.svc`              |
+| Cache      | in‑mem LRU                                  | Redis (TTL 60–120s)                        |
+| Limits     | same policy caps                            | same policy caps + WAF/ingress             |
+
+> **Tip:** keep a single `config.ts` that reads env and constructs a `RuntimeConfig` passed into the adapter.
+
+---
+
+## F. What to test locally vs hosted
+
+* **Local stdio**: schema validation, pagination, normalization, policy clamp logic, idempotency semantics (simulated), handler correctness on a small dataset.
+* **Hosted http/ws**: WebSocket upgrade, timeouts and retries to Search API, Redis cache behavior, WAF rate rule and ingress `limit-rps`, real latency SLOs, observability (logs/metrics/traces).
+
+---
+
+## G. Pros and cons (quick compare)
+
+**Local stdio**
+
+* ✅ Fastest feedback, zero infra, easy debugging
+* ✅ Works offline with stubs
+* ❌ No edge controls or TLS path
+* ❌ Limited concurrency realism
+
+**Hosted http/ws**
+
+* ✅ Realistic traffic, caching, scaling, security
+* ✅ End‑to‑end parity with production path
+* ❌ Slower iteration if used alone
+
+**Conclusion:** develop **core logic on stdio**, then validate **networked behavior on http/ws** before merging.
+
+---
+
+## H. Minimal code hooks to enable both
+
+* `createServer(adapter: 'stdio' | 'http')` – factory that wires the same handlers and schemas.
+* `getAuthContext(req)` – returns `anonymous` locally; parses JWT when present in hosted.
+* `policy(ctx, input)` – identical code path; only `ctx` differs.
+* `cache` – interface with in‑mem impl and Redis impl.
+
+This split keeps the **business logic transport‑agnostic** and makes switching between dev and prod trivial.
+
+---
+
 ## Appendix: Sources
 
 * **MCP – Overview & Spec (tools, transports, resources, prompts)**
